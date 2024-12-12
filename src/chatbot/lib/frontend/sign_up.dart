@@ -27,7 +27,17 @@ class _SignUpPageState extends State<SignUpPage> {
       return;
     }
 
-    await _authService.signUpWithEmail(email, password);
+    try {
+      await _authService.signUpWithEmail(email, password);
+    } on FirebaseAuthException catch (e) {
+      setState(() {
+          _errorMessage = "Lỗi: ${e.message}";
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = "Có lỗi xảy ra: $e";
+      });
+    }
   }
 
   @override
