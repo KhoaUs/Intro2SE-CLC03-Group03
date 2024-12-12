@@ -27,8 +27,18 @@ class _SignInPageState extends State<SignInPage> {
       return;
     }
 
-    await _authService.signInWithEmail(email, password);
-    Navigator.pushReplacementNamed(context, '/home');
+    try {
+      await _authService.signInWithEmail(email, password);
+      Navigator.pushReplacementNamed(context, '/home');
+    } on FirebaseAuthException catch (e) {
+      setState(() {
+          _errorMessage = "Lỗi: ${e.message}";
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = "Có lỗi xảy ra: $e";
+      });
+    }
   }
 
   @override
