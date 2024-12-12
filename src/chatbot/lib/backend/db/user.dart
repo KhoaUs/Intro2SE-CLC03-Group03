@@ -3,11 +3,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class User {
   String id;
   String name;
+  String plan;
   int token;
 
   User({
     required this.id,
     required this.name,
+    this.plan = 'free',
     this.token = 100 // default
   });
 
@@ -16,6 +18,7 @@ class User {
     return {
       'id': id,
       'name': name,
+      'plan': plan,
       'token': token,
     };
   }
@@ -25,6 +28,7 @@ class User {
     return User(
       id: data['id'] ?? '',
       name: data['name'] ?? '',
+      plan: data['plan'] ?? 'free',
       token: data['token'] ?? 100,
     );
   }

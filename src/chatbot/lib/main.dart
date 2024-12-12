@@ -3,9 +3,13 @@ import 'package:flutter/material.dart';
 import 'backend/config/firebase_config.dart';
 // import 'backend/db/user.dart';
 // import 'backend/services/auth_service.dart';
-import 'frontend/sign_up.dart';
+// import 'frontend/testUser.dart';
+// import 'frontend/testFetch.dart';
 import 'frontend/sign_in.dart';
+import 'frontend/sign_up.dart';
 import 'frontend/home.dart';
+import 'frontend/testPage.dart';
+import 'frontend/chat.dart';
 
 void main() async  {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,6 +28,8 @@ class MyApp extends StatelessWidget {
         '/signin': (context) => SignInPage(),  // Đăng nhập
         '/signup': (context) => SignUpPage(),  // Đăng ký
         '/home': (context) => HomePage(),
+        '/test': (context) => ComprehensiveTestPage(),
+        '/chat': (context) => ChatScreen()
       },
     );
   }
