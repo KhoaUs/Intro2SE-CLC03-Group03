@@ -32,9 +32,11 @@ class AuthService {
       } else {
         _logger.e("Lỗi không xác định: ${e.message}");
       }
+      throw e;
     } catch (e) {
       // Xử lý các lỗi khác (nếu có)
       _logger.e("Có lỗi xảy ra: $e");
+      throw Exception("Có lỗi xảy ra: $e");
     }
   }
 
@@ -47,8 +49,10 @@ class AuthService {
       } else {
         _logger.w("Tài khoản chưa được xác thực. Vui lòng kiểm tra email.");
       }
+      throw e;
     } else {
       _logger.e("Không tìm thấy người dùng đăng nhập.");
+      throw Exception("Có lỗi xảy ra: $e");
     }
   }
 
@@ -79,9 +83,11 @@ class AuthService {
       } else {
         _logger.e("Lỗi không xác định: ${e.message}");
       }
+      throw e;
     } catch (e) {
       // Xử lý các lỗi khác (nếu có)
       _logger.e("Có lỗi xảy ra: $e");
+      throw Exception("Có lỗi xảy ra: $e");
     }
   }
 
@@ -104,8 +110,10 @@ class AuthService {
       } else {
         _logger.e("Lỗi không xác định: ${e.message}");
       }
+      throw e;
     } catch (e) {
       _logger.e("Có lỗi xảy ra: $e");
+      throw Exception("Có lỗi xảy ra: $e");
     }
   }
 
@@ -129,12 +137,12 @@ class AuthService {
 
   // Lấy trạng thái người dùng hiện tại
   User? getCurrentUser() {
-  return _auth.currentUser;
+    return _auth.currentUser;
   }
 
   // Lấy uid của người dùng hiện tại
   String? getCurrentUserUID() {
-  return _auth.currentUser?.uid;
-}
+    return _auth.currentUser?.uid;
+  }
 
 }
