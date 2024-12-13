@@ -1,9 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:logger/logger.dart';
+import '../config/logger.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final Logger _logger = Logger();
+  final Logger MyLogger = Logger();
 
   // Đăng Ký tài khoản bằng Email và mật khẩu
   Future<void> signUpWithEmail(String email, String password) async {
@@ -19,36 +20,23 @@ class AuthService {
       if (user != null) {
         // Gửi email xác thực
         await user.sendEmailVerification();
-        _logger.i("Đăng ký thành công! Vui lòng kiểm tra email để kích hoạt tài khoản.");
+        MyLogger.i("Đăng ký thành công! Vui lòng kiểm tra email để kích hoạt tài khoản.");
       }
     } on FirebaseAuthException catch (e) {
       // Xử lý lỗi khi đăng ký
       if (e.code == 'weak-password') {
-        _logger.e("Mật khẩu quá yếu.");
+        MyLogger.e("Mật khẩu quá yếu.");
+        throw "Mật khẩu quá yếu.";
       } else if (e.code == 'email-already-in-use') {
-        _logger.e("Email đã được sử dụng cho tài khoản khác.");
+        MyLogger.e("Email đã được sử dụng cho tài khoản khác.");
+        throw "Email đã được sử dụng cho tài khoản khác.";
       } else if (e.code == 'invalid-email') {
-        _logger.e("Email không hợp lệ.");
+        MyLogger.e("Email không hợp lệ.");
+        throw "Email không hợp lệ.";
       } else {
-        _logger.e("Lỗi không xác định: ${e.message}");
+        MyLogger.e("Lỗi không xác định: ${e.message}");
+        throw "Lỗi không xác định: ${e.message}";
       }
-    } catch (e) {
-      // Xử lý các lỗi khác (nếu có)
-      _logger.e("Có lỗi xảy ra: $e");
-    }
-  }
-
-  // Kiểm tra trạng thái xác thực email
-  Future<void> checkEmailVerified() async {
-    User? user = _auth.currentUser;
-    if (user != null) {
-      if (user.emailVerified) {
-        _logger.i("Tài khoản đã được xác thực.");
-      } else {
-        _logger.w("Tài khoản chưa được xác thực. Vui lòng kiểm tra email.");
-      }
-    } else {
-      _logger.e("Không tìm thấy người dùng đăng nhập.");
     }
   }
 
@@ -65,76 +53,34 @@ class AuthService {
       // Kiểm tra nếu user tồn tại và đã xác thực email
       if (user != null) {
         if (user.emailVerified) {
-          _logger.i("Đăng nhập thành công!");
+          MyLogger.i("Đăng nhập thành công!");
         } else {
-          _logger.w("Tài khoản chưa được xác thực. Vui lòng kiểm tra email.");
+          MyLogger.w("Tài khoản chưa được xác thực. Vui lòng kiểm tra email.");
+          throw "Tài khoản chưa được xác thực. Vui lòng kiểm tra email.";
         }
       }
     } on FirebaseAuthException catch (e) {
       // Xử lý lỗi khi đăng nhập
-      if (e.code == 'user-not-found') {
-        _logger.e("Không tìm thấy tài khoản với email này.");
-      } else if (e.code == 'wrong-password') {
-        _logger.e("Mật khẩu không đúng.");
-      } else {
-        _logger.e("Lỗi không xác định: ${e.message}");
-      }
-    } catch (e) {
-      // Xử lý các lỗi khác (nếu có)
-      _logger.e("Có lỗi xảy ra: $e");
+      MyLogger.e("Tài khoản hoặc mật khẩu không đúng");
+      throw "Tài khoản hoặc mật khẩu không đúng";
     }
   }
 
   // Đăng xuất
   Future<void> signOut() async {
     await _auth.signOut();
-    _logger.i("Đã đăng xuất");
+    MyLogger.i("Đã đăng xuất");
   }
 
   // Gửi email khôi phục mật khẩu
   Future<void> sendPasswordResetEmail(String email) async {
-    try {
-      await _auth.sendPasswordResetEmail(email: email);
-      _logger.i("Đã gửi email khôi phục mật khẩu. Vui lòng kiểm tra email của bạn.");
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found') {
-        _logger.e("Không tìm thấy người dùng với email này.");
-      } else if (e.code == 'invalid-email') {
-        _logger.e("Email không hợp lệ.");
-      } else {
-        _logger.e("Lỗi không xác định: ${e.message}");
-      }
-    } catch (e) {
-      _logger.e("Có lỗi xảy ra: $e");
-    }
-  }
-
-  // Xác nhận và thay đổi mật khẩu mới
-  Future<void> confirmPasswordReset(String oobCode, String newPassword) async {
-    try {
-      await _auth.confirmPasswordReset(code: oobCode, newPassword: newPassword);
-      _logger.i("Mật khẩu đã được thay đổi thành công.");
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'invalid-action-code') {
-        _logger.e("Mã xác thực không hợp lệ.");
-      } else if (e.code == 'expired-action-code') {
-        _logger.e("Mã xác thực đã hết hạn.");
-      } else {
-        _logger.e("Lỗi không xác định: ${e.message}");
-      }
-    } catch (e) {
-      _logger.e("Có lỗi xảy ra: $e");
-    }
+    await _auth.sendPasswordResetEmail(email: email);
+    MyLogger.i("Đã gửi email khôi phục mật khẩu. Vui lòng kiểm tra email của bạn.");
   }
 
   // Lấy trạng thái người dùng hiện tại
   User? getCurrentUser() {
-  return _auth.currentUser;
+    return _auth.currentUser;
   }
-
-  // Lấy uid của người dùng hiện tại
-  String? getCurrentUserUID() {
-  return _auth.currentUser?.uid;
-}
 
 }

@@ -2,17 +2,17 @@ import 'package:chatbot/backend/config/string.dart';
 import 'package:chatbot/backend/services/prompt_service.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../backend/db/thread.dart';
 import '../../backend/db/message.dart';
 import '../frontend/widget/message_list.dart';
 
 class ChatPage extends StatefulWidget {
-  final String userId;
+  final FirebaseAuth auth;
 
-  const ChatPage({super.key, required this.userId});
+  const ChatPage({super.key, required this.auth});
 
   @override
-  // ignore: library_private_types_in_public_api
   _ChatPageState createState() => _ChatPageState();
 }
 
@@ -21,15 +21,35 @@ class _ChatPageState extends State<ChatPage> {
   final TextEditingController _renameController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
   late final ChatService _chatService;
+  String? userId;
 
   @override
   void initState() {
     super.initState();
-    _chatService = ChatService(API_KEY_GEMINI);  // Khởi tạo ChatService với API Key của bạn
+    _chatService = ChatService(API_KEY_GEMINI); // Initialize ChatService with your API Key
+    _initializeUserId();
+  }
+
+  Future<void> _initializeUserId() async {
+    final user = widget.auth.currentUser;
+    if (user == null) {
+      // Handle unauthenticated user, e.g., navigate to login screen
+      Navigator.of(context).pushReplacementNamed('/login');
+    } else {
+      setState(() {
+        userId = user.uid;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (userId == null) {
+      return Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(selectedThread?.title ?? 'Threads'),
@@ -43,7 +63,7 @@ class _ChatPageState extends State<ChatPage> {
                   child: StreamBuilder<DocumentSnapshot>(
                     stream: FirebaseFirestore.instance
                         .collection('users')
-                        .doc(widget.userId)
+                        .doc(userId)
                         .collection('threads')
                         .doc(selectedThread!.id)
                         .snapshots(),
@@ -76,7 +96,7 @@ class _ChatPageState extends State<ChatPage> {
       child: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('users')
-            .doc(widget.userId)
+            .doc(userId)
             .collection('threads')
             .snapshots(),
         builder: (context, snapshot) {
@@ -93,13 +113,12 @@ class _ChatPageState extends State<ChatPage> {
             children: [
               UserAccountsDrawerHeader(
                 accountName: Text('User'),
-                accountEmail: Text('user@example.com'),
+                accountEmail: Text(widget.auth.currentUser?.email ?? 'No email'),
               ),
               ListTile(
                 title: const Text('New Thread'),
                 onTap: () async {
                   await _addThread();
-                  // ignore: use_build_context_synchronously
                   Navigator.pop(context);
                 },
               ),
@@ -158,6 +177,8 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Future<void> _addThread() async {
+    if (userId == null) return;
+
     final thread = Thread(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       title: 'New Thread',
@@ -166,7 +187,7 @@ class _ChatPageState extends State<ChatPage> {
 
     await FirebaseFirestore.instance
         .collection('users')
-        .doc(widget.userId)
+        .doc(userId)
         .collection('threads')
         .doc(thread.id)
         .set(thread.toMap());
@@ -177,12 +198,15 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Future<void> _deleteThread(String threadId) async {
+    if (userId == null) return;
+
     await FirebaseFirestore.instance
         .collection('users')
-        .doc(widget.userId)
+        .doc(userId)
         .collection('threads')
         .doc(threadId)
         .delete();
+
     if (selectedThread?.id == threadId) {
       setState(() {
         selectedThread = null;
@@ -218,20 +242,22 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Future<void> _renameThread(String threadId) async {
-    if (_renameController.text.isEmpty) return;
+    if (_renameController.text.isEmpty || userId == null) return;
 
     await FirebaseFirestore.instance
         .collection('users')
-        .doc(widget.userId)
+        .doc(userId)
         .collection('threads')
         .doc(threadId)
         .update({'title': _renameController.text.trim()});
   }
 
   Future<void> _sendMessage() async {
+    if (selectedThread == null || userId == null) return;
+
     String tmpMessage = _messageController.text.trim();
     _messageController.clear();
-    if (tmpMessage.isEmpty || selectedThread == null) return;
+    if (tmpMessage.isEmpty) return;
 
     final message = Message(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -242,21 +268,18 @@ class _ChatPageState extends State<ChatPage> {
 
     final threadRef = FirebaseFirestore.instance
         .collection('users')
-        .doc(widget.userId)
+        .doc(userId)
         .collection('threads')
         .doc(selectedThread!.id);
 
-    // Cập nhật danh sách tin nhắn với tin nhắn người dùng
     await threadRef.update({
       'messages': FieldValue.arrayUnion([message.toMap()])
     });
-    
-    // Hiển thị hiệu ứng chờ
+
     setState(() {});
 
     String aiResponse = await _chatService.sendMessage(tmpMessage);
 
-    // Tạo tin nhắn phản hồi từ AI
     final aiMessage = Message(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       sender: 'AI',
@@ -264,11 +287,8 @@ class _ChatPageState extends State<ChatPage> {
       timestamp: DateTime.now(),
     );
 
-    // Thêm tin nhắn AI vào Firestore sau khi nhận phản hồi
     await threadRef.update({
       'messages': FieldValue.arrayUnion([aiMessage.toMap()])
     });
-
   }
-
 }

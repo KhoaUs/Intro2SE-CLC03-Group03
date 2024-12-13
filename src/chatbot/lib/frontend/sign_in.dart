@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../backend/services/auth_service.dart'; // Thay bằng đường dẫn thực tế
+import '../backend/services/auth_service.dart';
+import '../backend/config/logger.dart';
 
 class SignInPage extends StatefulWidget {
   const SignInPage({super.key});
@@ -24,13 +25,24 @@ class _SignInPageState extends State<SignInPage> {
     if (email.isEmpty || password.isEmpty) {
       setState(() {
         _errorMessage = "Email và mật khẩu không thể để trống.";
+        MyLogger.d("Email và mật khẩu không thể để trống.");
       });
       return;
     }
 
-    await _authService.signInWithEmail(email, password);
-    // ignore: use_build_context_synchronously
-    Navigator.pushReplacementNamed(context, '/home');
+    try {
+      // Authenticate user
+      await _authService.signInWithEmail(email, password);
+
+      // Navigate to ChatPage
+      // ignore: use_build_context_synchronously
+      Navigator.pushReplacementNamed(context, '/chat');
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString(); // Convert error to a string for display
+      });
+      MyLogger.d("Error during sign-in: $e");
+    }
   }
 
   @override
