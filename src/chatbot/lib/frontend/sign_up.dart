@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../backend/services/auth_service.dart'; // Thay bằng đường dẫn thực tế
-// import 'package:logger/logger.dart';
+import '../backend/config/logger.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -13,8 +13,8 @@ class SignUpPage extends StatefulWidget {
 class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController(); // Controller for confirm password
   final AuthService _authService = AuthService();
-  // final Logger _logger = Logger();
 
   String? _errorMessage;
 
@@ -22,15 +22,31 @@ class _SignUpPageState extends State<SignUpPage> {
   void _signUp() async {
     String email = _emailController.text.trim();
     String password = _passwordController.text.trim();
+    String confirmPassword = _confirmPasswordController.text.trim();
 
-    if (email.isEmpty || password.isEmpty) {
+    if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
       setState(() {
-        _errorMessage = "Email và mật khẩu không thể để trống.";
+        _errorMessage = "Email, mật khẩu, và xác nhận mật khẩu không thể để trống.";
       });
       return;
     }
 
-    await _authService.signUpWithEmail(email, password);
+    if (password != confirmPassword) {
+      setState(() {
+        _errorMessage = "Mật khẩu và xác nhận mật khẩu không khớp.";
+      });
+      return;
+    }
+
+    try {
+      await _authService.signUpWithEmail(email, password);
+      Navigator.pushReplacementNamed(context, '/signin');
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString(); // Convert error to a string for display
+      });
+      MyLogger.d("Error during sign-up: $e");
+    }
   }
 
   @override
@@ -49,6 +65,11 @@ class _SignUpPageState extends State<SignUpPage> {
             TextField(
               controller: _passwordController,
               decoration: const InputDecoration(labelText: "Mật khẩu"),
+              obscureText: true,
+            ),
+            TextField(
+              controller: _confirmPasswordController,
+              decoration: const InputDecoration(labelText: "Xác nhận mật khẩu"),
               obscureText: true,
             ),
             if (_errorMessage != null)
