@@ -8,7 +8,7 @@ class User {
 
   User({
     required this.id,
-    required this.name,
+    this.name = 'User',
     this.plan = 'free',
     this.token = 100 // default
   });
@@ -27,7 +27,7 @@ class User {
   factory User.fromMap(Map<String, dynamic> data) {
     return User(
       id: data['id'] ?? '',
-      name: data['name'] ?? '',
+      name: data['name'] ?? 'User',
       plan: data['plan'] ?? 'free',
       token: data['token'] ?? 100,
     );
