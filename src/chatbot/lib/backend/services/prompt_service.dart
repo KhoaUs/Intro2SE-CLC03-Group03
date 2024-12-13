@@ -1,5 +1,3 @@
-import 'dart:html' as html;
-import 'dart:typed_data';
 import 'package:google_generative_ai/google_generative_ai.dart';
 // import 'package:image_picker_web/image_picker_web.dart';
 // import '../UI/ui.dart'
@@ -10,14 +8,27 @@ class ChatService {
 
   ChatService(String apiKey) {
     _model = GenerativeModel(
-      model: 'gemini-1.5-flash-latest',
-      apiKey: apiKey,
+      model: 'gemini-1.5-flash-latest', // Model AI
+      apiKey: apiKey, // API Key
     );
-    _chat = _model.startChat();
+    _chat = _model.startChat(); // Khởi tạo phiên chat
   }
 
-  Future<String?> sendMessage(String message) async {
-    final response = await _chat.sendMessage(Content.text(message));
-    return response.text;
+  /// Gửi tin nhắn và nhận phản hồi từ AI
+  Future<String> sendMessage(String message) async {
+    try {
+      // Gửi tin nhắn
+      final response = await _chat.sendMessage(Content.text(message));
+
+      // Kiểm tra xem phản hồi có tồn tại không
+      if (response.text != null) {
+        return response.text!;
+      } else {
+        return 'No response from AI.';
+      }
+    } catch (error) {
+      // Xử lý lỗi
+      return 'Error: ${error.toString()}';
+    }
   }
 }

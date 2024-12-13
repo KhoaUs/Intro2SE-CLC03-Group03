@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../backend/services/auth_service.dart'; // Thay bằng đường dẫn thực tế
-import 'package:logger/logger.dart';
 
 class SignInPage extends StatefulWidget {
+  const SignInPage({super.key});
+
   @override
+  // ignore: library_private_types_in_public_api
   _SignInPageState createState() => _SignInPageState();
 }
 
@@ -11,7 +13,6 @@ class _SignInPageState extends State<SignInPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final AuthService _authService = AuthService();
-  final Logger _logger = Logger();
 
   String? _errorMessage;
 
@@ -28,25 +29,26 @@ class _SignInPageState extends State<SignInPage> {
     }
 
     await _authService.signInWithEmail(email, password);
+    // ignore: use_build_context_synchronously
     Navigator.pushReplacementNamed(context, '/home');
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Đăng nhập tài khoản")),
+      appBar: AppBar(title: const Text("Đăng nhập tài khoản")),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
               controller: _emailController,
-              decoration: InputDecoration(labelText: "Email"),
+              decoration: const InputDecoration(labelText: "Email"),
             ),
             TextField(
               controller: _passwordController,
-              decoration: InputDecoration(labelText: "Mật khẩu"),
+              decoration: const InputDecoration(labelText: "Mật khẩu"),
               obscureText: true,
             ),
             if (_errorMessage != null)
@@ -54,20 +56,20 @@ class _SignInPageState extends State<SignInPage> {
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: Text(
                   _errorMessage!,
-                  style: TextStyle(color: Colors.red),
+                  style: const TextStyle(color: Colors.red),
                 ),
               ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _signIn,
               
-              child: Text("Đăng nhập"),
+              child: const Text("Đăng nhập"),
             ),
             TextButton(
               onPressed: () {
                 Navigator.pushReplacementNamed(context, '/signup');
               },
-              child: Text("Chưa có tài khoản? Đăng ký ngay."),
+              child: const Text("Chưa có tài khoản? Đăng ký ngay."),
             ),
             TextButton(
               onPressed: () async {
@@ -81,7 +83,7 @@ class _SignInPageState extends State<SignInPage> {
                 }
                 await _authService.sendPasswordResetEmail(email);
               },
-              child: Text("Quên mật khẩu?"),
+              child: const Text("Quên mật khẩu?"),
             ),
           ],
         ),

@@ -7,10 +7,12 @@ class Thread {
   List<Message> messages;
 
   Thread({
-    required this.id,
-    required this.title,
-    required this.messages,
-  });
+    String? id,
+    String? title,
+    List<Message>? messages,
+  })  : id = id ?? DateTime.now().millisecondsSinceEpoch.toString(), // Default id là thời gian hiện tại
+        title = title ?? 'New Chat', // Default title là "New Chat"
+        messages = messages ?? []; // Default messages là danh sách trống
 
   // Chuyển Thread thành Map để lưu vào Firestore
   Map<String, dynamic> toMap() {
@@ -60,27 +62,27 @@ class Thread {
     await threadsCollection.doc(id).delete();
   }
 
-  Future<List<Thread>> fetchThreadsFromFirestore(String userId) async {
-    try {
-      // Access the threads subcollection of the specified user
-      final threadsCollection = FirebaseFirestore.instance
-          .collection('users')
-          .doc(userId)
-          .collection('threads');
+  // Future<List<Thread>> fetchThreadsFromFirestore(String userId) async {
+  //   try {
+  //     // Access the threads subcollection of the specified user
+  //     final threadsCollection = FirebaseFirestore.instance
+  //         .collection('users')
+  //         .doc(userId)
+  //         .collection('threads');
 
-      // Fetch all documents in the collection
-      final snapshot = await threadsCollection.get();
+  //     // Fetch all documents in the collection
+  //     final snapshot = await threadsCollection.get();
 
-      // Map each document to a Thread object
-      final threads = snapshot.docs.map((doc) {
-        return Thread.fromMap(doc.data());
-      }).toList();
+  //     // Map each document to a Thread object
+  //     final threads = snapshot.docs.map((doc) {
+  //       return Thread.fromMap(doc.data());
+  //     }).toList();
 
-      return threads;
-    } catch (e) {
-      // Log or handle any errors
-      print('Error fetching threads: $e');
-      return [];
-    }
-  }
+  //     return threads;
+  //   } catch (e) {
+  //     // Log or handle any errors
+  //     print('Error fetching threads: $e');
+  //     return [];
+  //   }
+  // }
 }
