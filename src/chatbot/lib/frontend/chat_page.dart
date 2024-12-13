@@ -6,6 +6,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../backend/db/thread.dart';
 import '../../backend/db/message.dart';
 import '../frontend/widget/message_list.dart';
+import '../frontend/setting.dart';
+import '../backend/config/logger.dart';
 
 class ChatPage extends StatefulWidget {
   final FirebaseAuth auth;
@@ -114,6 +116,17 @@ class _ChatPageState extends State<ChatPage> {
               UserAccountsDrawerHeader(
                 accountName: Text('User'),
                 accountEmail: Text(widget.auth.currentUser?.email ?? 'No email'),
+              ),
+              ListTile(
+                title: const Text('Settings'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SettingsPage(userId: userId!),
+                    ),
+                  );
+                },
               ),
               ListTile(
                 title: const Text('New Thread'),

@@ -7,7 +7,7 @@ class AuthService {
   final Logger MyLogger = Logger();
 
   // Đăng Ký tài khoản bằng Email và mật khẩu
-  Future<void> signUpWithEmail(String email, String password) async {
+  Future<User?> signUpWithEmail(String email, String password) async {
     try {
       // Tạo tài khoản mới với email và mật khẩu
       UserCredential userCredential = await _auth
@@ -21,6 +21,7 @@ class AuthService {
         // Gửi email xác thực
         await user.sendEmailVerification();
         MyLogger.i("Đăng ký thành công! Vui lòng kiểm tra email để kích hoạt tài khoản.");
+        return user;
       }
     } on FirebaseAuthException catch (e) {
       // Xử lý lỗi khi đăng ký

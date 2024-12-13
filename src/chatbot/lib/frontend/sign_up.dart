@@ -1,6 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../backend/services/auth_service.dart'; // Thay bằng đường dẫn thực tế
 import '../backend/config/logger.dart';
+import '../backend/db/user.dart' as u;
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -39,7 +41,21 @@ class _SignUpPageState extends State<SignUpPage> {
     }
 
     try {
-      await _authService.signUpWithEmail(email, password);
+      User? curUser = await _authService.signUpWithEmail(email, password);
+      // Extract the username from the email
+      String username = email.split('@')[0];
+
+      // Create a User instance
+      final newUser = u.User(
+        id: curUser?.uid,
+        name: username,
+        plan: 'free',
+        token: 100,
+      );
+
+      // Save the user to Firestore using the saveToFirestore method
+      await newUser.saveToFirestore();
+
       Navigator.pushReplacementNamed(context, '/signin');
     } catch (e) {
       setState(() {
