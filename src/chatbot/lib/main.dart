@@ -10,6 +10,7 @@ import 'backend/config/firebase_config.dart';
 import 'frontend/sign_in.dart';
 import 'frontend/sign_up.dart';
 import 'frontend/home.dart';
+import 'frontend/setting.dart';
 import '../backend/config/logger.dart';
 
 void main() async  {
@@ -29,7 +30,8 @@ class MyApp extends StatelessWidget {
         '/signin': (context) => const SignInPage(),  // Đăng nhập
         '/signup': (context) => const SignUpPage(),  // Đăng ký
         '/home': (context) => const HomePage(),
-        '/chat': (context) => ChatPage(auth: FirebaseAuth.instance)
+        '/chat': (context) => ChatPage(auth: FirebaseAuth.instance),
+        '/chat/setting': (context) => SettingsPage(auth: FirebaseAuth.instance),
       },
     );
   }
