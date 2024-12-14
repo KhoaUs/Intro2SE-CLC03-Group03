@@ -1,104 +1,98 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../backend/db/user.dart'; // Replace with your correct path
 import '../backend/config/logger.dart';
 
 class SettingsPage extends StatefulWidget {
-  final String userId;
+  final FirebaseAuth auth;
 
-  const SettingsPage({super.key, required this.userId});
+  const SettingsPage({Key? key, required this.auth}) : super(key: key);
 
   @override
   _SettingsPageState createState() => _SettingsPageState();
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  final TextEditingController _nameController = TextEditingController();
-  bool _isLoading = true;
-  String? _errorMessage;
+  MyUser? currentUser;
 
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    _loadUserInfo();
   }
 
-  Future<void> _loadUserData() async {
-    try {
-      final userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(widget.userId)
-          .get();
+  Future<void> _loadUserInfo() async {
+    final user = widget.auth.currentUser;
+    if (user == null) {
+      // If no user is signed in, navigate to login
+      Navigator.of(context).pushReplacementNamed('/signin');
+      return;
+    }
 
-      if (userDoc.exists) {
-        final userData = userDoc.data();
-        _nameController.text = userData?['name'] ?? 'User';
+    try {
+      MyUser? userData = await MyUser.getUserFromFirestore(user.uid);
+      if (userData != null) {
+        setState(() {
+          currentUser = userData;
+        });
+        MyLogger.i('User info loaded');
       }
     } catch (e) {
-      setState(() {
-        _errorMessage = 'Failed to load user data: $e';
-        MyLogger.d('Failed to load user data: $e');
-      });
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      MyLogger.e('Error loading user info: $e');
     }
   }
 
-  Future<void> _updateUserName() async {
+  Future<void> _logOut() async {
     try {
-      setState(() {
-        _errorMessage = null;
-      });
-
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(widget.userId)
-          .update({'name': _nameController.text.trim()});
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Name updated successfully!')),
-      );
+      await widget.auth.signOut();
+      Navigator.of(context).pushReplacementNamed('/signin');
+      MyLogger.i('User logged out');
     } catch (e) {
-      setState(() {
-        _errorMessage = 'Failed to update name: $e';
-        MyLogger.d('Failed to update name: $e');
-      });
+      MyLogger.e('Error logging out: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to log out')),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (currentUser == null) {
+      return Scaffold(
+        appBar: AppBar(title: Text('Settings')),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (_errorMessage != null)
-                    Text(
-                      _errorMessage!,
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                  TextField(
-                    controller: _nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Name',
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: _updateUserName,
-                    child: const Text('Update Name'),
-                  ),
-                ],
+      appBar: AppBar(title: Text('Settings')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'User Info',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text('Name: ${currentUser!.name}'),
+            Text('Plan: ${currentUser!.plan}'),
+            Text('Token: ${currentUser!.token}'),
+            const Spacer(),
+            Center(
+              child: ElevatedButton(
+                onPressed: _logOut,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                ),
+                child: Text('Log Out'),
               ),
             ),
+          ],
+        ),
+      ),
     );
   }
 }
