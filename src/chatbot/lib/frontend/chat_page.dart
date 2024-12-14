@@ -8,6 +8,7 @@ import '../../backend/db/message.dart';
 import '../frontend/widget/message_list.dart';
 import '../frontend/setting.dart';
 import '../backend/config/logger.dart';
+import '../backend/db/user.dart';
 
 class ChatPage extends StatefulWidget {
   final FirebaseAuth auth;
@@ -20,6 +21,7 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   Thread? selectedThread;
+  MyUser? curUser;
   final TextEditingController _renameController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
   late final ChatService _chatService;
@@ -30,17 +32,38 @@ class _ChatPageState extends State<ChatPage> {
     super.initState();
     _chatService = ChatService(API_KEY_GEMINI); // Initialize ChatService with your API Key
     _initializeUserId();
+    _loadUserData();
   }
 
   Future<void> _initializeUserId() async {
     final user = widget.auth.currentUser;
     if (user == null) {
       // Handle unauthenticated user, e.g., navigate to login screen
-      Navigator.of(context).pushReplacementNamed('/login');
+      Navigator.of(context).pushReplacementNamed('/signin');
+      MyLogger.d('Ask the user to login');
     } else {
       setState(() {
         userId = user.uid;
       });
+    }
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+
+      if (userSnapshot.exists) {
+        final userData = userSnapshot.data() as Map<String, dynamic>;
+        curUser = MyUser.fromMap(userData); // Chuyển dữ liệu thành đối tượng User
+        MyLogger.i('Retrieve user info successful');
+      } else {
+        MyLogger.e('User not found');
+      }
+    } catch (e) {
+      MyLogger.e('Error loading user data: $e');
     }
   }
 
@@ -54,7 +77,8 @@ class _ChatPageState extends State<ChatPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(selectedThread?.title ?? 'Threads'),
+        // title: Text(selectedThread?.title ?? 'Threads'),
+        title: Text('Chat Box'),
       ),
       drawer: _buildDrawer(),
       body: selectedThread == null
@@ -105,28 +129,24 @@ class _ChatPageState extends State<ChatPage> {
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
-
           final threads = snapshot.data!.docs
               .map((doc) => Thread.fromMap(doc.data() as Map<String, dynamic>))
               .toList();
-
           return ListView(
             padding: EdgeInsets.zero,
             children: [
               UserAccountsDrawerHeader(
-                accountName: Text('User'),
+                accountName: Text(curUser!.name),
                 accountEmail: Text(widget.auth.currentUser?.email ?? 'No email'),
-              ),
-              ListTile(
-                title: const Text('Settings'),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => SettingsPage(userId: userId!),
-                    ),
-                  );
-                },
+                otherAccountsPictures: [
+                  IconButton(
+                    icon: Icon(Icons.settings, color: Colors.white),
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/chat/setting');
+                      _loadUserData();
+                    }
+                  ),
+                ],
               ),
               ListTile(
                 title: const Text('New Thread'),
@@ -163,6 +183,7 @@ class _ChatPageState extends State<ChatPage> {
           );
         },
       ),
+      
     );
   }
 
@@ -182,7 +203,22 @@ class _ChatPageState extends State<ChatPage> {
           ),
           IconButton(
             icon: Icon(Icons.send),
-            onPressed: _sendMessage,
+            onPressed: () async {
+              try {
+                await _sendMessage();
+              } catch (e) {
+                if (e == 'Not enough token') {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('You do not have enough tokens!')),
+                  );
+                }
+                else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('An error occurred: $e')),
+                  );
+                }
+              }
+            }
           ),
         ],
       ),
@@ -208,6 +244,7 @@ class _ChatPageState extends State<ChatPage> {
     setState(() {
       selectedThread = thread;
     });
+    MyLogger.d('Added thread');
   }
 
   Future<void> _deleteThread(String threadId) async {
@@ -225,6 +262,7 @@ class _ChatPageState extends State<ChatPage> {
         selectedThread = null;
       });
     }
+    MyLogger.d('Deleted thread');
   }
 
   void _showRenameDialog(Thread thread) {
@@ -263,6 +301,8 @@ class _ChatPageState extends State<ChatPage> {
         .collection('threads')
         .doc(threadId)
         .update({'title': _renameController.text.trim()});
+
+    MyLogger.d('Renamed');
   }
 
   Future<void> _sendMessage() async {
@@ -271,6 +311,21 @@ class _ChatPageState extends State<ChatPage> {
     String tmpMessage = _messageController.text.trim();
     _messageController.clear();
     if (tmpMessage.isEmpty) return;
+
+    int tokenCost = _countToken(tmpMessage);
+    MyLogger.i('tokencost:$tokenCost');
+    MyLogger.i('token:${curUser!.token}');
+
+    if (curUser!.token < tokenCost) {
+      throw 'Not enough token';
+    }
+
+    curUser!.token = curUser!.token - tokenCost;
+    // update to firebase
+    await FirebaseFirestore.instance
+      .collection('users')
+      .doc(userId)
+      .update({'token': curUser!.token});
 
     final message = Message(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -289,6 +344,8 @@ class _ChatPageState extends State<ChatPage> {
       'messages': FieldValue.arrayUnion([message.toMap()])
     });
 
+    MyLogger.d('Message sent to firestore');
+
     setState(() {});
 
     String aiResponse = await _chatService.sendMessage(tmpMessage);
@@ -303,5 +360,11 @@ class _ChatPageState extends State<ChatPage> {
     await threadRef.update({
       'messages': FieldValue.arrayUnion([aiMessage.toMap()])
     });
+
+    MyLogger.d('AI response sent to firebase');
+  }
+
+  int _countToken(String message) {
+    return (message.length / 4).toInt();
   }
 }
