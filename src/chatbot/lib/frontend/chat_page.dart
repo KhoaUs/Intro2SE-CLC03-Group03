@@ -7,7 +7,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../backend/db/thread.dart';
 import '../../backend/db/message.dart';
 import '../frontend/widget/message_list.dart';
-import '../frontend/setting.dart';
 import '../backend/config/logger.dart';
 import '../backend/db/user.dart';
 import '../frontend/prompt_lib_page.dart';
