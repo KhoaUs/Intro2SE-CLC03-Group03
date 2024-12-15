@@ -6,9 +6,9 @@ class ChatService {
   late final GenerativeModel _model;
   late final ChatSession _chat;
 
-  ChatService(String apiKey) {
+  ChatService(String apiKey, String model) {
     _model = GenerativeModel(
-      model: 'gemini-1.5-flash-latest', // Model AI
+      model: model, // Model AI
       apiKey: apiKey, // API Key
     );
     _chat = _model.startChat(); // Khởi tạo phiên chat

@@ -10,6 +10,8 @@ import '../frontend/setting.dart';
 import '../backend/config/logger.dart';
 import '../backend/db/user.dart';
 
+const List<String> availableModels = [GEMINI_MODEL_1_0_PRO, GEMINI_MODEL_1_5_FLASH];
+
 class ChatPage extends StatefulWidget {
   final FirebaseAuth auth;
 
@@ -24,47 +26,16 @@ class _ChatPageState extends State<ChatPage> {
   MyUser? curUser;
   final TextEditingController _renameController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
-  late final ChatService _chatService;
+  late ChatService _chatService;
   String? userId;
+  String _selectedModel = GEMINI_MODEL_1_0_PRO; // Default AI model
 
   @override
   void initState() {
     super.initState();
-    _chatService = ChatService(API_KEY_GEMINI); // Initialize ChatService with your API Key
+    _chatService = ChatService(API_KEY_GEMINI, _selectedModel); // Initialize ChatService with your API Key
     _initializeUserId();
     _loadUserData();
-  }
-
-  Future<void> _initializeUserId() async {
-    final user = widget.auth.currentUser;
-    if (user == null) {
-      // Handle unauthenticated user, e.g., navigate to login screen
-      Navigator.of(context).pushReplacementNamed('/signin');
-      MyLogger.d('Ask the user to login');
-    } else {
-      setState(() {
-        userId = user.uid;
-      });
-    }
-  }
-
-  Future<void> _loadUserData() async {
-    try {
-      DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userId)
-          .get();
-
-      if (userSnapshot.exists) {
-        final userData = userSnapshot.data() as Map<String, dynamic>;
-        curUser = MyUser.fromMap(userData); // Chuyển dữ liệu thành đối tượng User
-        MyLogger.i('Retrieve user info successful');
-      } else {
-        MyLogger.e('User not found');
-      }
-    } catch (e) {
-      MyLogger.e('Error loading user data: $e');
-    }
   }
 
   @override
@@ -77,8 +48,27 @@ class _ChatPageState extends State<ChatPage> {
 
     return Scaffold(
       appBar: AppBar(
-        // title: Text(selectedThread?.title ?? 'Threads'),
-        title: Text('Chat Box'),
+        title: Row(
+          children: [
+            const SizedBox(width: 16),
+            DropdownButton<String>(
+              value: _selectedModel,
+              onChanged: (String? newValue) {
+                if (newValue != null) {
+                  _changeModel(newValue);
+                }
+              },
+              items: availableModels.map<DropdownMenuItem<String>>((String model) {
+                return DropdownMenuItem<String>(
+                  value: model,
+                  child: Text(model),
+                );
+              }).toList(),
+              icon: const Icon(Icons.arrow_drop_down),
+              underline: Container(height: 0), // Removes underline
+            ),
+          ],
+        ),
       ),
       drawer: _buildDrawer(),
       body: selectedThread == null
@@ -225,6 +215,38 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
+  void _showModelSelectionDialog() {
+    MyLogger.i(_selectedModel);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Select AI Model'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: availableModels.map((model) {
+            return RadioListTile<String>(
+              title: Text(model),
+              value: model,
+              groupValue: _selectedModel,
+              onChanged: (value) {
+                if (value != null) {
+                  _changeModel(value);
+                  Navigator.pop(context);
+                }
+              },
+            );
+          }).toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _addThread() async {
     if (userId == null) return;
 
@@ -307,12 +329,14 @@ class _ChatPageState extends State<ChatPage> {
 
   Future<void> _sendMessage() async {
     if (selectedThread == null || userId == null) return;
-
     String tmpMessage = _messageController.text.trim();
     _messageController.clear();
     if (tmpMessage.isEmpty) return;
 
     int tokenCost = _countToken(tmpMessage);
+    if (curUser?.plan == 'Pro') {
+      tokenCost = 0;
+    }
     MyLogger.i('tokencost:$tokenCost');
     MyLogger.i('token:${curUser!.token}');
 
@@ -366,5 +390,45 @@ class _ChatPageState extends State<ChatPage> {
 
   int _countToken(String message) {
     return (message.length / 4).toInt();
+  }
+
+  Future<void> _changeModel(String newModel) async {
+    setState(() {
+      _selectedModel = newModel;
+      _chatService = ChatService(API_KEY_GEMINI, _selectedModel); // Update ChatService with new model
+    });
+    MyLogger.i('AI model changed to $_selectedModel');
+  }
+
+  Future<void> _initializeUserId() async {
+    final user = widget.auth.currentUser;
+    if (user == null) {
+      // Handle unauthenticated user, e.g., navigate to login screen
+      Navigator.of(context).pushReplacementNamed('/signin');
+      MyLogger.d('Ask the user to login');
+    } else {
+      setState(() {
+        userId = user.uid;
+      });
+    }
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+
+      if (userSnapshot.exists) {
+        final userData = userSnapshot.data() as Map<String, dynamic>;
+        curUser = MyUser.fromMap(userData); // Chuyển dữ liệu thành đối tượng User
+        MyLogger.i('Retrieve user info successful');
+      } else {
+        MyLogger.e('User not found');
+      }
+    } catch (e) {
+      MyLogger.e('Error loading user data: $e');
+    }
   }
 }
