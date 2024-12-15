@@ -1,4 +1,5 @@
 import 'package:chatbot/backend/config/string.dart';
+import 'package:chatbot/backend/db/prompt.dart';
 import 'package:chatbot/backend/services/prompt_service.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -9,6 +10,7 @@ import '../frontend/widget/message_list.dart';
 import '../frontend/setting.dart';
 import '../backend/config/logger.dart';
 import '../backend/db/user.dart';
+import '../frontend/prompt_lib_page.dart';
 
 const List<String> availableModels = [GEMINI_MODEL_1_0_PRO, GEMINI_MODEL_1_5_FLASH];
 
@@ -29,6 +31,8 @@ class _ChatPageState extends State<ChatPage> {
   late ChatService _chatService;
   String? userId;
   String _selectedModel = GEMINI_MODEL_1_0_PRO; // Default AI model
+  bool _showPrompt = false;
+  List<Prompt> prompts = []; // List of fetched prompts
 
   @override
   void initState() {
@@ -102,6 +106,34 @@ class _ChatPageState extends State<ChatPage> {
                   ),
                 ),
                 _buildMessageInput(),
+                if (_showPrompt)
+                  Container(
+                    margin: EdgeInsets.only(top: 8.0),
+                    height: 100,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    child: ListView.builder(
+                      itemCount: prompts.length,
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          title: Text(prompts[index].title), // Display prompt title
+                          onTap: () {
+                            // Replace '/' with selected prompt's text
+                            String currentText = _messageController.text;
+                            _messageController.text = currentText.replaceAll('/', prompts[index].text);
+                            _messageController.selection = TextSelection.fromPosition(
+                              TextPosition(offset: _messageController.text.length),
+                            );
+                            setState(() {
+                              _showPrompt = false;
+                            });
+                          },
+                        );
+                      },
+                    ),
+                  ),
               ],
             ),
     );
@@ -138,8 +170,20 @@ class _ChatPageState extends State<ChatPage> {
                   ),
                 ],
               ),
+              // New option to change prompt
               ListTile(
-                title: const Text('New Thread'),
+                title: const Text('Prompt Library'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PromptLibrary(auth: widget.auth),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                title: const Text('Add Thread'),
                 onTap: () async {
                   await _addThread();
                   Navigator.pop(context);
@@ -185,8 +229,11 @@ class _ChatPageState extends State<ChatPage> {
           Expanded(
             child: TextField(
               controller: _messageController,
+              onChanged: (text) {
+                _handleSlashInput(text);
+              },
               decoration: InputDecoration(
-                hintText: 'Type a message...',
+                hintText: "Type '/' to see prompts",
                 border: OutlineInputBorder(),
               ),
             ),
@@ -214,6 +261,20 @@ class _ChatPageState extends State<ChatPage> {
       ),
     );
   }
+
+  void _handleSlashInput(String text) {
+    // Handle '/' input and show prompts accordingly
+    if (text.endsWith('/')) {
+      setState(() {
+        _showPrompt = true;
+      });
+    } else {
+      setState(() {
+        _showPrompt = false;
+      });
+    }
+  }
+
 
   void _showModelSelectionDialog() {
     MyLogger.i(_selectedModel);
@@ -429,6 +490,15 @@ class _ChatPageState extends State<ChatPage> {
       }
     } catch (e) {
       MyLogger.e('Error loading user data: $e');
+    }
+
+    // Fetch prompts from Firestore
+    if (userId != null) {
+      Prompt.fetchPrompts(userId!).listen((fetchedPrompts) {
+        setState(() {
+          prompts = fetchedPrompts;
+        });
+      });
     }
   }
 }
