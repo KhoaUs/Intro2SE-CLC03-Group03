@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../backend/services/auth_service.dart'; // Thay bằng đường dẫn thực tế
 import '../backend/config/logger.dart';
-import '../backend/db/user.dart' as u;
+import '../backend/db/user.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -47,7 +47,7 @@ class _SignUpPageState extends State<SignUpPage> {
       String username = email.split('@')[0];
 
       // Create a User instance
-      final newUser = u.User(
+      final newUser = MyUser(
         id: curUser?.uid,
         name: username,
         plan: 'free',
