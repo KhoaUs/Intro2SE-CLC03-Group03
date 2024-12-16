@@ -42,7 +42,7 @@ class AuthService {
     return null;
   }
 
-  // Sign in with email and password
+ // Sign in with email and password
   Future<void> signInWithEmail(String email, String password) async {
     try {
       // Sign in with email and password
