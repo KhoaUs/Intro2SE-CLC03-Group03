@@ -164,7 +164,7 @@ class _SignInPageState extends State<SignInPage> {
                 ),
                 const SizedBox(height: 20),
                 Container(
-                  width: screenWidth * 0.3,
+                  width: screenWidth * 0.3,  // Adjust this width to be dynamic
                   constraints: const BoxConstraints(
                     minWidth: 300, // Minimum width for the login box
                   ),
@@ -219,6 +219,21 @@ class _SignInPageState extends State<SignInPage> {
                         ),
                       ),
                       const SizedBox(height: 15),
+                      TextButton(
+                        onPressed: () async {
+                          String email = _emailController.text.trim();
+                          if (email.isEmpty) {
+                            _showErrorMessage("Email cannot be empty.");
+                            return;
+                          }
+                          await _authService.sendPasswordResetEmail(email);
+                        },
+                        child: const Text(
+                          'Forgot Password?',
+                          style: TextStyle(color: Colors.purple),
+                        ),
+                      ),
+                      const SizedBox(height: 15),
                       ElevatedButton(
                         onPressed: _isLoading ? null : _signIn, // Disable button when loading
                         style: ElevatedButton.styleFrom(
@@ -226,16 +241,21 @@ class _SignInPageState extends State<SignInPage> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(50),
                           ),
-                          elevation: 0,
-                          backgroundColor: Colors.transparent,
+                          elevation: 0, // No shadow
+                          backgroundColor: Colors.transparent, // Allows the gradient to show
                         ).copyWith(
                           foregroundColor: WidgetStateProperty.all(Colors.white),
-                          overlayColor: WidgetStateProperty.resolveWith<Color?>((states) {
-                            if (states.contains(WidgetState.pressed)) {
-                              return Colors.pinkAccent.withAlpha(50);
-                            }
-                            return null;
-                          }),
+                          overlayColor: WidgetStateProperty.resolveWith<Color?>(
+                            (states) {
+                              if (states.contains(WidgetState.pressed)) {
+                                return Colors.pinkAccent.withAlpha(50); // Ripple effect when pressed
+                              }
+                              if (states.contains(WidgetState.hovered)) {
+                                return Colors.pinkAccent.withAlpha(25); // Hover effect
+                              }
+                              return null; // Default
+                            },
+                          ),
                         ),
                         child: Ink(
                           decoration: BoxDecoration(
@@ -259,6 +279,13 @@ class _SignInPageState extends State<SignInPage> {
                           ),
                         ),
                       ),
+                      const SizedBox(height: 15),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pushReplacementNamed(context, '/signup');
+                        },
+                        child: const Text("Don't have an account? Sign up."),
+                      ),
                     ],
                   ),
                 ),
@@ -270,4 +297,3 @@ class _SignInPageState extends State<SignInPage> {
     );
   }
 }
-
