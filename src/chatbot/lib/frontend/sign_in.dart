@@ -90,152 +90,159 @@ class _SignInPageState extends State<SignInPage> {
 
     return Scaffold(
       body: SingleChildScrollView(
-        child: Container(
-          height: screenHeight,
-          width: screenWidth,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Colors.purple,
-                Colors.pink,
-                Colors.red,
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: screenHeight > 600 ? screenHeight : 600, // Set a minimum height
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 60),
-              SizedBox(
-                child: Image.asset('images/logo.png', fit: BoxFit.contain),
+          child: Container(
+            width: screenWidth,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.purple,
+                  Colors.pink,
+                  Colors.red,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              const SizedBox(height: 20),
-              const Text(
-                'Welcome to ChatGPT',
-                style: TextStyle(
-                  fontSize: 22,
-                  color: Colors.white,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 60),
+                SizedBox(
+                  child: Image.asset('images/logo.png', fit: BoxFit.contain),
                 ),
-              ),
-              const SizedBox(height: 20),
-              Container(
-                width: screenWidth * 0.6,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
+                const SizedBox(height: 20),
+                const Text(
+                  'Welcome to ChatGPT',
+                  style: TextStyle(
+                    fontSize: 22,
+                    color: Colors.white,
+                  ),
                 ),
-                child: Column(
-                  children: [
-                    const Text(
-                      'Sign In',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.purple,
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-                    TextField(
-                      controller: _emailController,
-                      decoration: const InputDecoration(
-                        suffixIcon: Icon(
-                          FontAwesomeIcons.envelope,
-                          size: 17,
-                        ),
-                        hintText: 'Email',
-                        hintStyle: TextStyle(
-                          color: Colors.grey,
+                const SizedBox(height: 20),
+                Container(
+                  width: screenWidth * 0.3,  // Adjust this width to be dynamic
+                  constraints: const BoxConstraints(
+                    minWidth: 300, // Minimum width for the login box
+                  ),
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Column(
+                    children: [
+                      const Text(
+                        'Sign In',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.purple,
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: _passwordController,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        suffixIcon: Icon(
-                          FontAwesomeIcons.lock,
-                          size: 17,
-                        ),
-                        hintText: 'Password',
-                        hintStyle: TextStyle(
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-                    TextButton(
-                      onPressed: () async {
-                        String email = _emailController.text.trim();
-                        if (email.isEmpty) {
-                          _showErrorMessage("Email cannot be empty.");
-                          return;
-                        }
-                        await _authService.sendPasswordResetEmail(email);
-                      },
-                      child: const Text(
-                        'Forgot Password?',
-                        style: TextStyle(color: Colors.purple),
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-                    ElevatedButton(
-                      onPressed: _signIn,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.all(15),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                        elevation: 0, // No shadow
-                        backgroundColor: Colors.transparent, // Allows the gradient to show
-                      ).copyWith(
-                        foregroundColor: WidgetStateProperty.all(Colors.white),
-                        overlayColor: WidgetStateProperty.resolveWith<Color?>(
-                          (states) {
-                            if (states.contains(WidgetState.pressed)) {
-                              return Colors.pinkAccent.withAlpha(50); // Ripple effect when pressed
-                            }
-                            if (states.contains(WidgetState.hovered)) {
-                              return Colors.pinkAccent.withAlpha(25); // Hover effect
-                            }
-                            return null; // Default
-                          },
-                        ),
-                      ),
-                      child: Ink(
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Colors.purple, Colors.pink, Colors.red],
-                            begin: Alignment.centerLeft,
-                            end: Alignment.centerRight,
+                      const SizedBox(height: 15),
+                      TextField(
+                        controller: _emailController,
+                        decoration: const InputDecoration(
+                          suffixIcon: Icon(
+                            FontAwesomeIcons.envelope,
+                            size: 17,
                           ),
-                          borderRadius: BorderRadius.circular(50),
+                          hintText: 'Email',
+                          hintStyle: TextStyle(
+                            color: Colors.grey,
+                          ),
                         ),
-                        child: const Center(
-                          child: Text(
-                            'Login',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
+                      ),
+                      const SizedBox(height: 10),
+                      TextField(
+                        controller: _passwordController,
+                        obscureText: true,
+                        decoration: const InputDecoration(
+                          suffixIcon: Icon(
+                            FontAwesomeIcons.lock,
+                            size: 17,
+                          ),
+                          hintText: 'Password',
+                          hintStyle: TextStyle(
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+                      TextButton(
+                        onPressed: () async {
+                          String email = _emailController.text.trim();
+                          if (email.isEmpty) {
+                            _showErrorMessage("Email cannot be empty.");
+                            return;
+                          }
+                          await _authService.sendPasswordResetEmail(email);
+                        },
+                        child: const Text(
+                          'Forgot Password?',
+                          style: TextStyle(color: Colors.purple),
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+                      ElevatedButton(
+                        onPressed: _signIn,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.all(15),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+                          elevation: 0, // No shadow
+                          backgroundColor: Colors.transparent, // Allows the gradient to show
+                        ).copyWith(
+                          foregroundColor: WidgetStateProperty.all(Colors.white),
+                          overlayColor: WidgetStateProperty.resolveWith<Color?>(
+                            (states) {
+                              if (states.contains(WidgetState.pressed)) {
+                                return Colors.pinkAccent.withAlpha(50); // Ripple effect when pressed
+                              }
+                              if (states.contains(WidgetState.hovered)) {
+                                return Colors.pinkAccent.withAlpha(25); // Hover effect
+                              }
+                              return null; // Default
+                            },
+                          ),
+                        ),
+                        child: Ink(
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Colors.purple, Colors.pink, Colors.red],
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                            ),
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'Login',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 15),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pushReplacementNamed(context, '/signup');
-                      },
-                      child: const Text("Don't have an account? Sign up."),
-                    ),
-                  ],
+                      const SizedBox(height: 15),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pushReplacementNamed(context, '/signup');
+                        },
+                        child: const Text("Don't have an account? Sign up."),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
