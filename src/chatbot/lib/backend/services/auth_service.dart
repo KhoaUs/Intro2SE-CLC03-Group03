@@ -1,87 +1,87 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:logger/logger.dart';
-import '../config/logger.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  // ignore: non_constant_identifier_names
   final Logger MyLogger = Logger();
 
-  // Đăng Ký tài khoản bằng Email và mật khẩu
+  // Register account with email and password
   Future<User?> signUpWithEmail(String email, String password) async {
     try {
-      // Tạo tài khoản mới với email và mật khẩu
+      // Create a new account with email and password
       UserCredential userCredential = await _auth
           .createUserWithEmailAndPassword(email: email, password: password);
 
-      // Lấy thông tin người dùng vừa được tạo
+      // Get the user information of the newly created account
       User? user = userCredential.user;
 
-      // Kiểm tra nếu user tồn tại, thực hiện các hành động tiếp theo (nếu cần)
+      // Check if user exists, perform any necessary actions
       if (user != null) {
-        // Gửi email xác thực
+        // Send email verification
         await user.sendEmailVerification();
-        MyLogger.i("Đăng ký thành công! Vui lòng kiểm tra email để kích hoạt tài khoản.");
+        MyLogger.i("Registration successful! Please check your email to verify your account.");
         return user;
       }
     } on FirebaseAuthException catch (e) {
-      // Xử lý lỗi khi đăng ký
+      // Handle errors during registration
       if (e.code == 'weak-password') {
-        MyLogger.e("Mật khẩu quá yếu.");
-        throw "Mật khẩu quá yếu.";
+        MyLogger.e("Password is too weak.");
+        throw "Password is too weak.";
       } else if (e.code == 'email-already-in-use') {
-        MyLogger.e("Email đã được sử dụng cho tài khoản khác.");
-        throw "Email đã được sử dụng cho tài khoản khác.";
+        MyLogger.e("Email is already used by another account.");
+        throw "Email is already used by another account.";
       } else if (e.code == 'invalid-email') {
-        MyLogger.e("Email không hợp lệ.");
-        throw "Email không hợp lệ.";
+        MyLogger.e("Invalid email.");
+        throw "Invalid email.";
       } else {
-        MyLogger.e("Lỗi không xác định: ${e.message}");
-        throw "Lỗi không xác định: ${e.message}";
+        MyLogger.e("Undefined error: ${e.message}");
+        throw "Undefined error: ${e.message}";
       }
     }
+    return null;
   }
 
-  // Đăng nhập với email và mật khẩu
+ // Sign in with email and password
   Future<void> signInWithEmail(String email, String password) async {
     try {
-      // Đăng nhập với email và mật khẩu
+      // Sign in with email and password
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
 
-      // Lấy thông tin người dùng sau khi đăng nhập
+      // Get user information after signing in
       User? user = userCredential.user;
 
-      // Kiểm tra nếu user tồn tại và đã xác thực email
+      // Check if the user exists and if email is verified
       if (user != null) {
         if (user.emailVerified) {
-          MyLogger.i("Đăng nhập thành công!");
+          MyLogger.i("Login successful!");
         } else {
-          MyLogger.w("Tài khoản chưa được xác thực. Vui lòng kiểm tra email.");
-          throw "Tài khoản chưa được xác thực. Vui lòng kiểm tra email.";
+          MyLogger.w("Account is not verified. Please check your email.");
+          throw "Account is not verified. Please check your email.";
         }
       }
-    } on FirebaseAuthException catch (e) {
-      // Xử lý lỗi khi đăng nhập
-      MyLogger.e("Tài khoản hoặc mật khẩu không đúng");
-      throw "Tài khoản hoặc mật khẩu không đúng";
+    } on FirebaseAuthException {
+      // Handle errors during sign in
+      MyLogger.e("Incorrect email or password.");
+      throw "Incorrect email or password.";
     }
   }
 
-  // Đăng xuất
+  // Sign out
   Future<void> signOut() async {
     await _auth.signOut();
-    MyLogger.i("Đã đăng xuất");
+    MyLogger.i("Signed out");
   }
 
-  // Gửi email khôi phục mật khẩu
+  // Send password reset email
   Future<void> sendPasswordResetEmail(String email) async {
     await _auth.sendPasswordResetEmail(email: email);
-    MyLogger.i("Đã gửi email khôi phục mật khẩu. Vui lòng kiểm tra email của bạn.");
+    MyLogger.i("Password reset email sent. Please check your email.");
   }
 
-  // Lấy trạng thái người dùng hiện tại
+  // Get current user status
   User? getCurrentUser() {
     return _auth.currentUser;
   }
-
 }
