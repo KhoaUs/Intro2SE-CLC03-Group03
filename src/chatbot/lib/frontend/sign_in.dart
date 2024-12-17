@@ -18,8 +18,18 @@ class _SignInPageState extends State<SignInPage> {
   // Track the visibility of the password
   bool _isPasswordVisible = false;
 
+  // Track the loading state to prevent multiple requests
+  bool _isLoading = false;
+
   // Sign-in method
   void _signIn() async {
+    // Prevent multiple button presses
+    if (_isLoading) return;
+
+    setState(() {
+      _isLoading = true; // Set loading state
+    });
+
     String email = _emailController.text.trim();
     String password = _passwordController.text.trim();
 
@@ -27,18 +37,21 @@ class _SignInPageState extends State<SignInPage> {
     if (email.isEmpty && password.isEmpty) {
       _showErrorMessage("Email and password cannot be empty.");
       MyLogger.d("Email and password cannot be empty.");
+      setState(() => _isLoading = false); // Reset loading state
       return;
     }
 
     if (email.isEmpty) {
       _showErrorMessage("Email cannot be empty.");
       MyLogger.d("Email cannot be empty.");
+      setState(() => _isLoading = false);
       return;
     }
 
     if (password.isEmpty) {
       _showErrorMessage("Password cannot be empty.");
       MyLogger.d("Password cannot be empty.");
+      setState(() => _isLoading = false);
       return;
     }
 
@@ -48,6 +61,10 @@ class _SignInPageState extends State<SignInPage> {
     } catch (e) {
       _showErrorMessage(e.toString());
       MyLogger.d("Error during sign-in: $e");
+    } finally {
+      setState(() {
+        _isLoading = false; // Reset loading state after request
+      });
     }
   }
 
@@ -147,7 +164,7 @@ class _SignInPageState extends State<SignInPage> {
                 ),
                 const SizedBox(height: 20),
                 Container(
-                  width: screenWidth * 0.3,  // Adjust this width to be dynamic
+                  width: screenWidth * 0.3,
                   constraints: const BoxConstraints(
                     minWidth: 300, // Minimum width for the login box
                   ),
@@ -183,7 +200,7 @@ class _SignInPageState extends State<SignInPage> {
                       const SizedBox(height: 10),
                       TextField(
                         controller: _passwordController,
-                        obscureText: !_isPasswordVisible, // Bind the visibility to _isPasswordVisible
+                        obscureText: !_isPasswordVisible,
                         decoration: InputDecoration(
                           suffixIcon: IconButton(
                             icon: Icon(
@@ -193,7 +210,7 @@ class _SignInPageState extends State<SignInPage> {
                               size: 17,
                               color: Colors.grey,
                             ),
-                            onPressed: _togglePasswordVisibility, // Toggle the visibility
+                            onPressed: _togglePasswordVisibility,
                           ),
                           hintText: 'Password',
                           hintStyle: const TextStyle(
@@ -202,40 +219,22 @@ class _SignInPageState extends State<SignInPage> {
                         ),
                       ),
                       const SizedBox(height: 15),
-                      TextButton(
-                        onPressed: () async {
-                          String email = _emailController.text.trim();
-                          if (email.isEmpty) {
-                            _showErrorMessage("Email cannot be empty.");
-                            return;
-                          }
-                          await _authService.sendPasswordResetEmail(email);
-                        },
-                        child: const Text(
-                          'Forgot Password?',
-                          style: TextStyle(color: Colors.purple),
-                        ),
-                      ),
-                      const SizedBox(height: 15),
                       ElevatedButton(
-                        onPressed: _signIn,
+                        onPressed: _isLoading ? null : _signIn, // Disable button when loading
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.all(15),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(50),
                           ),
-                          elevation: 0, // No shadow
-                          backgroundColor: Colors.transparent, // Allows the gradient to show
+                          elevation: 0,
+                          backgroundColor: Colors.transparent,
                         ).copyWith(
                           foregroundColor: WidgetStateProperty.all(Colors.white),
                           overlayColor: WidgetStateProperty.resolveWith<Color?>((states) {
                             if (states.contains(WidgetState.pressed)) {
-                              return Colors.pinkAccent.withAlpha(50); // Ripple effect when pressed
+                              return Colors.pinkAccent.withAlpha(50);
                             }
-                            if (states.contains(WidgetState.hovered)) {
-                              return Colors.pinkAccent.withAlpha(25); // Hover effect
-                            }
-                            return null; // Default
+                            return null;
                           }),
                         ),
                         child: Ink(
@@ -247,23 +246,18 @@ class _SignInPageState extends State<SignInPage> {
                             ),
                             borderRadius: BorderRadius.circular(50),
                           ),
-                          child: const Center(
-                            child: Text(
-                              'Login',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                          child: Center(
+                            child: _isLoading
+                                ? const CircularProgressIndicator(color: Colors.white)
+                                : const Text(
+                                    'Login',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 15),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pushReplacementNamed(context, '/signup');
-                        },
-                        child: const Text("Don't have an account? Sign up."),
                       ),
                     ],
                   ),
@@ -276,3 +270,4 @@ class _SignInPageState extends State<SignInPage> {
     );
   }
 }
+

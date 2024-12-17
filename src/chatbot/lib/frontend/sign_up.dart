@@ -22,34 +22,46 @@ class _SignUpPageState extends State<SignUpPage> {
   // Add a boolean to toggle password visibility
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
+  bool _isSigningUp = false;
 
   void _signUp() async {
+    if (_isSigningUp) return; // Avoid multiple presses
+
+    setState(() {
+      _isSigningUp = true; // Lock the button
+    });
+
     String email = _emailController.text.trim();
     String password = _passwordController.text.trim();
     String confirmPassword = _confirmPasswordController.text.trim();
 
     if (email.isEmpty && password.isEmpty && confirmPassword.isEmpty) {
       _showErrorMessage("Email and password cannot be empty.");
+      setState(() => _isSigningUp = false);
       return;
     }
 
     if (email.isEmpty) {
       _showErrorMessage("Email cannot be empty.");
+      setState(() => _isSigningUp = false);
       return;
     }
 
     if (password.isEmpty) {
       _showErrorMessage("Password cannot be empty.");
+      setState(() => _isSigningUp = false);
       return;
     }
 
     if (confirmPassword.isEmpty) {
       _showErrorMessage("Confirm password cannot be empty.");
+      setState(() => _isSigningUp = false);
       return;
     }
 
     if (password != confirmPassword) {
       _showErrorMessage("Password and confirm password do not match.");
+      setState(() => _isSigningUp = false);
       return;
     }
 
@@ -66,11 +78,72 @@ class _SignUpPageState extends State<SignUpPage> {
 
       await newUser.saveToFirestore();
 
+      if (curUser != null && !curUser.emailVerified) {
+        await curUser.sendEmailVerification();
+
+        _showSuccessMessage(
+          "A verification email has been sent to $email. Please check your email to verify your account.",
+        );
+      }
+
       Navigator.pushReplacementNamed(context, '/signin');
     } catch (e) {
       MyLogger.d("Error during sign-up: $e");
       _showErrorMessage(e.toString());
+    } finally {
+      setState(() {
+        _isSigningUp = false; // Unlock the button after request finishes
+      });
     }
+  }
+
+
+  void _showSuccessMessage(String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          contentPadding: const EdgeInsets.all(15),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Success",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.close,
+                      color: Colors.black54,
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(
+                message,
+                style: const TextStyle(fontSize: 16),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   void _showErrorMessage(String message) {
@@ -237,7 +310,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                       const SizedBox(height: 15),
                       ElevatedButton(
-                        onPressed: _signUp,
+                        onPressed: _isSigningUp ? null : _signUp, // Disable the button if signing up
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.all(15),
                           shape: RoundedRectangleBorder(
@@ -268,14 +341,16 @@ class _SignUpPageState extends State<SignUpPage> {
                             ),
                             borderRadius: BorderRadius.circular(50),
                           ),
-                          child: const Center(
-                            child: Text(
-                              'Sign Up',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                          child: Center(
+                            child: _isSigningUp
+                                ? const CircularProgressIndicator(color: Colors.white) // Loading indicator
+                                : const Text(
+                                    'Sign Up',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                           ),
                         ),
                       ),
