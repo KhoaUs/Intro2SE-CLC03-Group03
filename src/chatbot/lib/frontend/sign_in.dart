@@ -15,14 +15,30 @@ class _SignInPageState extends State<SignInPage> {
   final TextEditingController _passwordController = TextEditingController();
   final AuthService _authService = AuthService();
 
+  // Track the visibility of the password
+  bool _isPasswordVisible = false;
+
   // Sign-in method
   void _signIn() async {
     String email = _emailController.text.trim();
     String password = _passwordController.text.trim();
 
-    if (email.isEmpty || password.isEmpty) {
+    // Check for specific errors
+    if (email.isEmpty && password.isEmpty) {
       _showErrorMessage("Email and password cannot be empty.");
       MyLogger.d("Email and password cannot be empty.");
+      return;
+    }
+
+    if (email.isEmpty) {
+      _showErrorMessage("Email cannot be empty.");
+      MyLogger.d("Email cannot be empty.");
+      return;
+    }
+
+    if (password.isEmpty) {
+      _showErrorMessage("Password cannot be empty.");
+      MyLogger.d("Password cannot be empty.");
       return;
     }
 
@@ -33,6 +49,13 @@ class _SignInPageState extends State<SignInPage> {
       _showErrorMessage(e.toString());
       MyLogger.d("Error during sign-in: $e");
     }
+  }
+
+  // Toggle password visibility
+  void _togglePasswordVisibility() {
+    setState(() {
+      _isPasswordVisible = !_isPasswordVisible;
+    });
   }
 
   void _showErrorMessage(String message) {
@@ -160,14 +183,20 @@ class _SignInPageState extends State<SignInPage> {
                       const SizedBox(height: 10),
                       TextField(
                         controller: _passwordController,
-                        obscureText: true,
-                        decoration: const InputDecoration(
-                          suffixIcon: Icon(
-                            FontAwesomeIcons.lock,
-                            size: 17,
+                        obscureText: !_isPasswordVisible, // Bind the visibility to _isPasswordVisible
+                        decoration: InputDecoration(
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _isPasswordVisible
+                                  ? FontAwesomeIcons.eyeSlash
+                                  : FontAwesomeIcons.eye,
+                              size: 17,
+                              color: Colors.grey,
+                            ),
+                            onPressed: _togglePasswordVisibility, // Toggle the visibility
                           ),
                           hintText: 'Password',
-                          hintStyle: TextStyle(
+                          hintStyle: const TextStyle(
                             color: Colors.grey,
                           ),
                         ),
@@ -199,17 +228,15 @@ class _SignInPageState extends State<SignInPage> {
                           backgroundColor: Colors.transparent, // Allows the gradient to show
                         ).copyWith(
                           foregroundColor: WidgetStateProperty.all(Colors.white),
-                          overlayColor: WidgetStateProperty.resolveWith<Color?>(
-                            (states) {
-                              if (states.contains(WidgetState.pressed)) {
-                                return Colors.pinkAccent.withAlpha(50); // Ripple effect when pressed
-                              }
-                              if (states.contains(WidgetState.hovered)) {
-                                return Colors.pinkAccent.withAlpha(25); // Hover effect
-                              }
-                              return null; // Default
-                            },
-                          ),
+                          overlayColor: WidgetStateProperty.resolveWith<Color?>((states) {
+                            if (states.contains(WidgetState.pressed)) {
+                              return Colors.pinkAccent.withAlpha(50); // Ripple effect when pressed
+                            }
+                            if (states.contains(WidgetState.hovered)) {
+                              return Colors.pinkAccent.withAlpha(25); // Hover effect
+                            }
+                            return null; // Default
+                          }),
                         ),
                         child: Ink(
                           decoration: BoxDecoration(
