@@ -8,11 +8,11 @@ class Sidebar extends StatefulWidget {
   final VoidCallback onCreateThread;  // Hàm callback để tạo thread mới
 
   const Sidebar({
-    Key? key,
+    super.key,
     required this.initialThreads,
     required this.onThreadSelected,
     required this.onCreateThread,
-  }) : super(key: key);
+  });
 
   @override
   _SidebarState createState() => _SidebarState();
@@ -29,13 +29,13 @@ class _SidebarState extends State<Sidebar> {
 
   // Hàm hiển thị hộp thoại đổi tên thread
   void _showRenameDialog(BuildContext context, String threadId) {
-    final TextEditingController _renameController = TextEditingController();
+    final TextEditingController renameController = TextEditingController();
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Đổi tên Thread'),
         content: TextField(
-          controller: _renameController,
+          controller: renameController,
           decoration: const InputDecoration(labelText: 'Tên mới'),
         ),
         actions: [
@@ -47,8 +47,8 @@ class _SidebarState extends State<Sidebar> {
           ),
           TextButton(
             onPressed: () {
-              if (_renameController.text.isNotEmpty) {
-                _renameThread(threadId, _renameController.text.trim());
+              if (renameController.text.isNotEmpty) {
+                _renameThread(threadId, renameController.text.trim());
               }
               Navigator.pop(context);
             },

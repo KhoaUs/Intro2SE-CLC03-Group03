@@ -44,7 +44,7 @@ class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     if (userId == null) {
-      return Scaffold(
+      return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
@@ -75,7 +75,7 @@ class _ChatPageState extends State<ChatPage> {
       ),
       drawer: _buildDrawer(),
       body: selectedThread == null
-          ? Center(child: Text('Select a thread to chat'))
+          ? const Center(child: Text('Select a thread to chat'))
           : Column(
               children: [
                 Expanded(
@@ -88,12 +88,12 @@ class _ChatPageState extends State<ChatPage> {
                         .snapshots(),
                     builder: (context, snapshot) {
                       if (!snapshot.hasData) {
-                        return Center(child: CircularProgressIndicator());
+                        return const Center(child: CircularProgressIndicator());
                       }
 
                       final threadData = snapshot.data?.data() as Map<String, dynamic>?;
                       if (threadData == null) {
-                        return Center(child: Text('No messages'));
+                        return const Center(child: Text('No messages'));
                       }
 
                       final messages = (threadData['messages'] as List<dynamic>)
@@ -107,7 +107,7 @@ class _ChatPageState extends State<ChatPage> {
                 _buildMessageInput(),
                 if (_showPrompt)
                   Container(
-                    margin: EdgeInsets.only(top: 8.0),
+                    margin: const EdgeInsets.only(top: 8.0),
                     height: 100,
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.grey),
@@ -161,7 +161,7 @@ class _ChatPageState extends State<ChatPage> {
                 accountEmail: Text(widget.auth.currentUser?.email ?? 'No email'),
                 otherAccountsPictures: [
                   IconButton(
-                    icon: Icon(Icons.settings, color: Colors.white),
+                    icon: const Icon(Icons.settings, color: Colors.white),
                     onPressed: () {
                       Navigator.pushNamed(context, '/chat/setting');
                       _loadUserData();
@@ -201,7 +201,7 @@ class _ChatPageState extends State<ChatPage> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        icon: Icon(Icons.edit),
+                        icon: const Icon(Icons.edit),
                         onPressed: () => _showRenameDialog(thread),
                       ),
                       IconButton(
@@ -231,21 +231,21 @@ class _ChatPageState extends State<ChatPage> {
               onChanged: (text) {
                 _handleSlashInput(text);
               },
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: "Type '/' to see prompts",
                 border: OutlineInputBorder(),
               ),
             ),
           ),
           IconButton(
-            icon: Icon(Icons.send),
+            icon: const Icon(Icons.send),
             onPressed: () async {
               try {
                 await _sendMessage();
               } catch (e) {
                 if (e == 'Not enough token') {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('You do not have enough tokens!')),
+                    const SnackBar(content: Text('You do not have enough tokens!')),
                   );
                 }
                 else {
@@ -280,7 +280,7 @@ class _ChatPageState extends State<ChatPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Select AI Model'),
+        title: const Text('Select AI Model'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: availableModels.map((model) {
@@ -300,7 +300,7 @@ class _ChatPageState extends State<ChatPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
         ],
       ),
@@ -352,10 +352,10 @@ class _ChatPageState extends State<ChatPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Rename Thread'),
+        title: const Text('Rename Thread'),
         content: TextField(
           controller: _renameController,
-          decoration: InputDecoration(hintText: 'Enter new title'),
+          decoration: const InputDecoration(hintText: 'Enter new title'),
         ),
         actions: [
           TextButton(
@@ -363,11 +363,11 @@ class _ChatPageState extends State<ChatPage> {
               _renameThread(thread.id);
               Navigator.pop(context);
             },
-            child: Text('Save'),
+            child: const Text('Save'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
         ],
       ),

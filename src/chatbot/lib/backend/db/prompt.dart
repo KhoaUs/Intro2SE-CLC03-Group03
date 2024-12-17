@@ -32,7 +32,7 @@ class Prompt {
         .collection('prompts')
         .snapshots()
         .map((snapshot) => snapshot.docs
-            .map((doc) => Prompt.fromMap(doc.id, doc.data() as Map<String, dynamic>))
+            .map((doc) => Prompt.fromMap(doc.id, doc.data()))
             .toList());
   }
 

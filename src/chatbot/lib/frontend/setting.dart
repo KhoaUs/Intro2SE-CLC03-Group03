@@ -7,7 +7,7 @@ import '../backend/config/logger.dart';
 class SettingsPage extends StatefulWidget {
   final FirebaseAuth auth;
 
-  const SettingsPage({Key? key, required this.auth}) : super(key: key);
+  const SettingsPage({super.key, required this.auth});
 
   @override
   _SettingsPageState createState() => _SettingsPageState();
@@ -50,7 +50,7 @@ class _SettingsPageState extends State<SettingsPage> {
     } catch (e) {
       MyLogger.e('Error logging out: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to log out')),
+        const SnackBar(content: Text('Failed to log out')),
       );
     }
   }
