@@ -15,26 +15,22 @@ class _SignInPageState extends State<SignInPage> {
   final TextEditingController _passwordController = TextEditingController();
   final AuthService _authService = AuthService();
 
-  // Hàm đăng nhập
+  // Sign-in method
   void _signIn() async {
     String email = _emailController.text.trim();
     String password = _passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
-      _showErrorMessage("Email và mật khẩu không thể để trống.");
-      MyLogger.d("Email và mật khẩu không thể để trống.");
+      _showErrorMessage("Email and password cannot be empty.");
+      MyLogger.d("Email and password cannot be empty.");
       return;
     }
 
     try {
-      // Authenticate user
       await _authService.signInWithEmail(email, password);
-
-      // Navigate to ChatPage
-      // ignore: use_build_context_synchronously
       Navigator.pushReplacementNamed(context, '/chat');
     } catch (e) {
-      _showErrorMessage(e.toString()); // Show error as pop-up
+      _showErrorMessage(e.toString());
       MyLogger.d("Error during sign-in: $e");
     }
   }
@@ -42,7 +38,7 @@ class _SignInPageState extends State<SignInPage> {
   void _showErrorMessage(String message) {
     showDialog(
       context: context,
-      barrierDismissible: true, // Allows the dialog to be dismissed by tapping outside
+      barrierDismissible: true,
       builder: (BuildContext context) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
@@ -186,29 +182,42 @@ class _SignInPageState extends State<SignInPage> {
                       ),
                     ),
                     const SizedBox(height: 15),
-                    GestureDetector(
-                      onTap: _signIn,
-                      child: Container(
-                        alignment: Alignment.center,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
+                    ElevatedButton(
+                      onPressed: _signIn,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.all(15),
+                        shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(50),
+                        ),
+                        elevation: 0, // No shadow
+                        backgroundColor: Colors.transparent, // Allows the gradient to show
+                      ).copyWith(
+                        foregroundColor: WidgetStateProperty.all(Colors.white),
+                        overlayColor: WidgetStateProperty.resolveWith<Color?>(
+                          (states) {
+                            if (states.contains(WidgetState.pressed)) {
+                              return Colors.pinkAccent.withAlpha(50); // Ripple effect when pressed
+                            }
+                            if (states.contains(WidgetState.hovered)) {
+                              return Colors.pinkAccent.withAlpha(25); // Hover effect
+                            }
+                            return null; // Default
+                          },
+                        ),
+                      ),
+                      child: Ink(
+                        decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [
-                              Colors.purple,
-                              Colors.pink,
-                              Colors.red,
-                            ],
+                            colors: [Colors.purple, Colors.pink, Colors.red],
                             begin: Alignment.centerLeft,
                             end: Alignment.centerRight,
                           ),
+                          borderRadius: BorderRadius.circular(50),
                         ),
-                        child: const Padding(
-                          padding: EdgeInsets.all(10),
+                        child: const Center(
                           child: Text(
                             'Login',
                             style: TextStyle(
-                              color: Colors.white,
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
