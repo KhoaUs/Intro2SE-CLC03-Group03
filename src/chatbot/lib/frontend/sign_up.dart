@@ -19,8 +19,6 @@ class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController _confirmPasswordController = TextEditingController(); // Controller for confirm password
   final AuthService _authService = AuthService();
 
-  String? _errorMessage;
-
   // Hàm đăng ký
   void _signUp() async {
     String email = _emailController.text.trim();
@@ -28,16 +26,12 @@ class _SignUpPageState extends State<SignUpPage> {
     String confirmPassword = _confirmPasswordController.text.trim();
 
     if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
-      setState(() {
-        _errorMessage = "Email, mật khẩu, và xác nhận mật khẩu không thể để trống.";
-      });
+      _showErrorMessage("Email, mật khẩu, và xác nhận mật khẩu không thể để trống.");
       return;
     }
 
     if (password != confirmPassword) {
-      setState(() {
-        _errorMessage = "Mật khẩu và xác nhận mật khẩu không khớp.";
-      });
+      _showErrorMessage("Mật khẩu và xác nhận mật khẩu không khớp.");
       return;
     }
 
@@ -59,11 +53,57 @@ class _SignUpPageState extends State<SignUpPage> {
 
       Navigator.pushReplacementNamed(context, '/signin');
     } catch (e) {
-      setState(() {
-        _errorMessage = e.toString(); // Convert error to a string for display
-      });
       MyLogger.d("Error during sign-up: $e");
+      _showErrorMessage(e.toString());
     }
+  }
+
+  void _showErrorMessage(String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          contentPadding: const EdgeInsets.all(15),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Error",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.close,
+                      color: Colors.black54,
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(
+                message,
+                style: const TextStyle(fontSize: 16),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -73,8 +113,11 @@ class _SignUpPageState extends State<SignUpPage> {
 
     return Scaffold(
       body: SingleChildScrollView(
-        child: Container(
-          height: screenHeight,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: screenHeight > 600 ? screenHeight : 600, // Set a minimum height
+          ),
+          child: Container(
           width: screenWidth,
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -104,7 +147,10 @@ class _SignUpPageState extends State<SignUpPage> {
               ),
               const SizedBox(height: 20),
               Container(
-                width: screenWidth * 0.6,
+                width: screenWidth * 0.3,
+                constraints: const BoxConstraints(
+                  minWidth: 300, // Minimum width for the login box
+                ),
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -164,38 +210,43 @@ class _SignUpPageState extends State<SignUpPage> {
                         ),
                       ),
                     ),
-                    if (_errorMessage != null)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        child: Text(
-                          _errorMessage!,
-                          style: const TextStyle(color: Colors.red),
+                    const SizedBox(height: 15),
+                    ElevatedButton(
+                      onPressed: _signUp,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.all(15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(50),
+                        ),
+                        elevation: 0, // No shadow
+                        backgroundColor: Colors.transparent, // Allows the gradient to show
+                      ).copyWith(
+                        foregroundColor: WidgetStateProperty.all(Colors.white),
+                        overlayColor: WidgetStateProperty.resolveWith<Color?>(
+                          (states) {
+                            if (states.contains(WidgetState.pressed)) {
+                              return Colors.pinkAccent.withAlpha(50); // Ripple effect when pressed
+                            }
+                            if (states.contains(WidgetState.hovered)) {
+                              return Colors.pinkAccent.withAlpha(25); // Hover effect
+                            }
+                            return null; // Default
+                          },
                         ),
                       ),
-                    const SizedBox(height: 15),
-                    GestureDetector(
-                      onTap: _signUp, // Sign Up method when button is pressed
-                      child: Container(
-                        alignment: Alignment.center,
-                        width: double.infinity,
+                      child: Ink(
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(50),
                           gradient: const LinearGradient(
-                            colors: [
-                              Colors.purple,
-                              Colors.pink,
-                              Colors.red,
-                            ],
+                            colors: [Colors.purple, Colors.pink, Colors.red],
                             begin: Alignment.centerLeft,
                             end: Alignment.centerRight,
                           ),
+                          borderRadius: BorderRadius.circular(50),
                         ),
-                        child: const Padding(
-                          padding: EdgeInsets.all(10),
+                        child: const Center(
                           child: Text(
                             'Sign Up',
                             style: TextStyle(
-                              color: Colors.white,
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
@@ -216,8 +267,8 @@ class _SignUpPageState extends State<SignUpPage> {
             ],
           ),
         ),
+        )
       ),
     );
   }
-
 }
