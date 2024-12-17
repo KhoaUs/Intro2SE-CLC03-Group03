@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-import '../backend/services/auth_service.dart'; // Thay bằng đường dẫn thực tế
-import 'package:logger/logger.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../backend/services/auth_service.dart';
+import '../backend/config/logger.dart';
 
 class SignInPage extends StatefulWidget {
+  const SignInPage({super.key});
+
   @override
   _SignInPageState createState() => _SignInPageState();
 }
@@ -11,9 +14,6 @@ class _SignInPageState extends State<SignInPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final AuthService _authService = AuthService();
-  final Logger _logger = Logger();
-
-  String? _errorMessage;
 
   // Hàm đăng nhập
   void _signIn() async {
@@ -21,79 +21,213 @@ class _SignInPageState extends State<SignInPage> {
     String password = _passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
-      setState(() {
-        _errorMessage = "Email và mật khẩu không thể để trống.";
-      });
+      _showErrorMessage("Email và mật khẩu không thể để trống.");
+      MyLogger.d("Email và mật khẩu không thể để trống.");
       return;
     }
 
     try {
+      // Authenticate user
       await _authService.signInWithEmail(email, password);
-      Navigator.pushReplacementNamed(context, '/home');
-    } on FirebaseAuthException catch (e) {
-      setState(() {
-          _errorMessage = "Lỗi: ${e.message}";
-      });
+
+      // Navigate to ChatPage
+      // ignore: use_build_context_synchronously
+      Navigator.pushReplacementNamed(context, '/chat');
     } catch (e) {
-      setState(() {
-        _errorMessage = "Có lỗi xảy ra: $e";
-      });
+      _showErrorMessage(e.toString()); // Show error as pop-up
+      MyLogger.d("Error during sign-in: $e");
     }
+  }
+
+  void _showErrorMessage(String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: true, // Allows the dialog to be dismissed by tapping outside
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          contentPadding: const EdgeInsets.all(15),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Error",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.close,
+                      color: Colors.black54,
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(
+                message,
+                style: const TextStyle(fontSize: 16),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
-      appBar: AppBar(title: Text("Đăng nhập tài khoản")),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(labelText: "Email"),
+      body: SingleChildScrollView(
+        child: Container(
+          height: screenHeight,
+          width: screenWidth,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.purple,
+                Colors.pink,
+                Colors.red,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-            TextField(
-              controller: _passwordController,
-              decoration: InputDecoration(labelText: "Mật khẩu"),
-              obscureText: true,
-            ),
-            if (_errorMessage != null)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Text(
-                  _errorMessage!,
-                  style: TextStyle(color: Colors.red),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 60),
+              SizedBox(
+                child: Image.asset('images/logo.png', fit: BoxFit.contain),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Welcome to ChatGPT',
+                style: TextStyle(
+                  fontSize: 22,
+                  color: Colors.white,
                 ),
               ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _signIn,
-              
-              child: Text("Đăng nhập"),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pushReplacementNamed(context, '/signup');
-              },
-              child: Text("Chưa có tài khoản? Đăng ký ngay."),
-            ),
-            TextButton(
-              onPressed: () async {
-                // Gửi email khôi phục mật khẩu
-                String email = _emailController.text.trim();
-                if (email.isEmpty) {
-                  setState(() {
-                    _errorMessage = "Email không thể để trống.";
-                  });
-                  return;
-                }
-                await _authService.sendPasswordResetEmail(email);
-              },
-              child: Text("Quên mật khẩu?"),
-            ),
-          ],
+              const SizedBox(height: 20),
+              Container(
+                width: screenWidth * 0.6,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  children: [
+                    const Text(
+                      'Sign In',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.purple,
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    TextField(
+                      controller: _emailController,
+                      decoration: const InputDecoration(
+                        suffixIcon: Icon(
+                          FontAwesomeIcons.envelope,
+                          size: 17,
+                        ),
+                        hintText: 'Email',
+                        hintStyle: TextStyle(
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: _passwordController,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        suffixIcon: Icon(
+                          FontAwesomeIcons.lock,
+                          size: 17,
+                        ),
+                        hintText: 'Password',
+                        hintStyle: TextStyle(
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    TextButton(
+                      onPressed: () async {
+                        String email = _emailController.text.trim();
+                        if (email.isEmpty) {
+                          _showErrorMessage("Email cannot be empty.");
+                          return;
+                        }
+                        await _authService.sendPasswordResetEmail(email);
+                      },
+                      child: const Text(
+                        'Forgot Password?',
+                        style: TextStyle(color: Colors.purple),
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    GestureDetector(
+                      onTap: _signIn,
+                      child: Container(
+                        alignment: Alignment.center,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(50),
+                          gradient: const LinearGradient(
+                            colors: [
+                              Colors.purple,
+                              Colors.pink,
+                              Colors.red,
+                            ],
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                          ),
+                        ),
+                        child: const Padding(
+                          padding: EdgeInsets.all(10),
+                          child: Text(
+                            'Login',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pushReplacementNamed(context, '/signup');
+                      },
+                      child: const Text("Don't have an account? Sign up."),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

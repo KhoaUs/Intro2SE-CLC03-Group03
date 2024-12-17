@@ -1,13 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../config/logger.dart';
 
-class User {
-  String id;
+class MyUser {
+  String? id;
   String name;
+  String plan;
   int token;
 
-  User({
+  MyUser({
     required this.id,
-    required this.name,
+    this.name = 'User',
+    this.plan = 'free',
     this.token = 100 // default
   });
 
@@ -16,15 +19,17 @@ class User {
     return {
       'id': id,
       'name': name,
+      'plan': plan,
       'token': token,
     };
   }
 
   // Khởi tạo User từ Map đọc từ Firestore
-  factory User.fromMap(Map<String, dynamic> data) {
-    return User(
+  factory MyUser.fromMap(Map<String, dynamic> data) {
+    return MyUser(
       id: data['id'] ?? '',
-      name: data['name'] ?? '',
+      name: data['name'] ?? 'User',
+      plan: data['plan'] ?? 'free',
       token: data['token'] ?? 100,
     );
   }
@@ -45,5 +50,27 @@ class User {
   Future<void> deleteFromFirestore() async {
     final usersCollection = FirebaseFirestore.instance.collection('users');
     await usersCollection.doc(id).delete();
+  }
+
+  // Hàm lấy dữ liệu User từ Firestore
+  static Future<MyUser?> getUserFromFirestore(String userId) async {
+    final usersCollection = FirebaseFirestore.instance.collection('users');
+
+    try {
+      final doc = await usersCollection.doc(userId).get();
+
+      if (doc.exists) {
+        MyLogger.i('Doc does exist');
+        return MyUser.fromMap(doc.data()!);
+      } else {
+        MyLogger.d('User not found');
+        return null; // User not found
+      }
+    } catch (e) {
+      // Handle errors (e.g., log them)
+      print('Error retrieving user: $e');
+      MyLogger.e('Error retrieving user: $e');
+      return null;
+    }
   }
 }

@@ -1,0 +1,8 @@
+1. Prompt Library: chỉnh lại cách trình bày sao cho thân thiện với người dùng
+2. Add Thread: thêm padding cho New thread, tạo sự tác biệt giữa các thread với nhau
+3. Change Model: điều chỉnh Dropdown của tính năng thay dổi model sao cho đẹp mắt
+4. Sidebar: điều chỉnh sidebar sao cho giống gpt nhất có thể
+5. Icon: thay đổi kích cỡ, kiểu dáng các icon sao cho phù hợp
+6. SignIn/Up page: các nút bấm cần có cảm giác được nhấn (tạo hiệu ứng khi nhấn)
+7. ChatPage: khi chọn 1 thread, thì tự động kéo hiện thị tới chỗ chat gần nhất
+8. Còn tiếp ...
