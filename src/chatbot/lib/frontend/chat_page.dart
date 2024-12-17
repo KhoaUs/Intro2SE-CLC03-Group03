@@ -553,6 +553,22 @@ class _ChatPageState extends State<ChatPage> {
                   borderSide: BorderSide(color: Colors.black, width: 1), // Modify non-focus border color
                 ),
               ),
+              onSubmitted: (value) async {
+                try {
+                  await _sendMessage();
+                } catch (e) {
+                  if (e == 'Not enough token') {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('You do not have enough tokens!')),
+                    );
+                  }
+                  else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('An error occurred: $e')),
+                    );
+                  }
+                }
+              },
             ),
           ),
           IconButton(
