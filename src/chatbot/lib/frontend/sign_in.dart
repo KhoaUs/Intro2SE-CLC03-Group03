@@ -188,8 +188,8 @@ class _SignInPageState extends State<SignInPage> {
                           suffixIcon: IconButton(
                             icon: Icon(
                               _isPasswordVisible
-                                  ? FontAwesomeIcons.eyeSlash
-                                  : FontAwesomeIcons.eye,
+                                  ? FontAwesomeIcons.eye
+                                  : FontAwesomeIcons.eyeSlash,
                               size: 17,
                               color: Colors.grey,
                             ),
