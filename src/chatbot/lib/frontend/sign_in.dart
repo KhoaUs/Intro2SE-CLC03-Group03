@@ -7,7 +7,6 @@ class SignInPage extends StatefulWidget {
   const SignInPage({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
   _SignInPageState createState() => _SignInPageState();
 }
 
@@ -16,18 +15,14 @@ class _SignInPageState extends State<SignInPage> {
   final TextEditingController _passwordController = TextEditingController();
   final AuthService _authService = AuthService();
 
-  String? _errorMessage;
-
   // Hàm đăng nhập
   void _signIn() async {
     String email = _emailController.text.trim();
     String password = _passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
-      setState(() {
-        _errorMessage = "Email và mật khẩu không thể để trống.";
-        MyLogger.d("Email và mật khẩu không thể để trống.");
-      });
+      _showErrorMessage("Email và mật khẩu không thể để trống.");
+      MyLogger.d("Email và mật khẩu không thể để trống.");
       return;
     }
 
@@ -39,11 +34,57 @@ class _SignInPageState extends State<SignInPage> {
       // ignore: use_build_context_synchronously
       Navigator.pushReplacementNamed(context, '/chat');
     } catch (e) {
-      setState(() {
-        _errorMessage = e.toString(); // Convert error to a string for display
-      });
+      _showErrorMessage(e.toString()); // Show error as pop-up
       MyLogger.d("Error during sign-in: $e");
     }
+  }
+
+  void _showErrorMessage(String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: true, // Allows the dialog to be dismissed by tapping outside
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          contentPadding: const EdgeInsets.all(15),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Error",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.close,
+                      color: Colors.black54,
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(
+                message,
+                style: const TextStyle(fontSize: 16),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -129,21 +170,12 @@ class _SignInPageState extends State<SignInPage> {
                         ),
                       ),
                     ),
-                    if (_errorMessage != null)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        child: Text(
-                          _errorMessage!,
-                          style: const TextStyle(color: Colors.red),
-                        ),
-                      ),
+                    const SizedBox(height: 15),
                     TextButton(
                       onPressed: () async {
                         String email = _emailController.text.trim();
                         if (email.isEmpty) {
-                          setState(() {
-                            _errorMessage = "Email cannot be empty.";
-                          });
+                          _showErrorMessage("Email cannot be empty.");
                           return;
                         }
                         await _authService.sendPasswordResetEmail(email);
