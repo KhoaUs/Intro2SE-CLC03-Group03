@@ -307,6 +307,9 @@ class _SignUpPageState extends State<SignUpPage> {
                           hintText: 'Confirm Password',
                           hintStyle: const TextStyle(color: Colors.grey),
                         ),
+                        onSubmitted: (_) { // Dấu "_" là tham số đại diện cho giá trị được nhâpj}
+                          _signUp();   // Gọi hàm đăng ký khi nhấn Enter
+                        },
                       ),
                       const SizedBox(height: 15),
                       ElevatedButton(
@@ -341,16 +344,19 @@ class _SignUpPageState extends State<SignUpPage> {
                             ),
                             borderRadius: BorderRadius.circular(50),
                           ),
-                          child: Center(
-                            child: _isSigningUp
-                                ? const CircularProgressIndicator(color: Colors.white) // Loading indicator
-                                : const Text(
-                                    'Sign Up',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
+                          child: Padding( // Thêm padding để tạo khoảng cách hợp lý
+                            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 34),
+                            child: Center(
+                              child: _isSigningUp
+                                  ? const CircularProgressIndicator(color: Colors.white) // Loading indicator
+                                  : const Text(
+                                      'Sign Up',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
-                                  ),
+                            ),
                           ),
                         ),
                       ),

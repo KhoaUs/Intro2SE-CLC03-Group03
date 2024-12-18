@@ -54,7 +54,7 @@ class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     if (userId == null) {
-      return Scaffold(
+      return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
@@ -104,7 +104,7 @@ class _ChatPageState extends State<ChatPage> {
                         Colors.deepPurple.shade400
                       ]),
                       style: const TextStyle(
-                        fontSize: 50,
+                        fontSize: 38,
                         fontFamily: 'Roboto Flex',
                         fontWeight: FontWeight.w400,
                         letterSpacing: -0.6
@@ -123,7 +123,7 @@ class _ChatPageState extends State<ChatPage> {
                 'Select a thread to chat',
                 style: TextStyle(
                   color: Colors.black,
-                  fontSize: 25
+                  fontSize: 18
                 ),
               )
             )
@@ -170,7 +170,7 @@ class _ChatPageState extends State<ChatPage> {
                 decoration: BoxDecoration(
                   color: Colors.grey.shade200,
                   borderRadius: BorderRadius.circular(12.0),
-                  boxShadow: [
+                  boxShadow: const [
                     BoxShadow(
                       color: Colors.black12,
                       blurRadius: 8,
@@ -267,7 +267,7 @@ class _ChatPageState extends State<ChatPage> {
                                           ? Colors.blueGrey.shade200 // Hovered state color for specific prompt
                                           : Colors.white, // Default color
                                   borderRadius: BorderRadius.circular(8.0),
-                                  boxShadow: [
+                                  boxShadow: const [
                                     BoxShadow(
                                       color: Colors.black12,
                                       blurRadius: 6,
@@ -475,7 +475,7 @@ class _ChatPageState extends State<ChatPage> {
                           ),
                         ),
                       );
-                    }).toList(),
+                    }),
                   ],
                 );
               },
@@ -533,9 +533,10 @@ class _ChatPageState extends State<ChatPage> {
 
   Widget _buildMessageInput() {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
       child: Row(
         children: [
+          // TextField chiếm toàn bộ chiều ngang trừ nút IconButton
           Expanded(
             child: TextField(
               controller: _messageController,
@@ -543,61 +544,64 @@ class _ChatPageState extends State<ChatPage> {
                 _handleSlashInput(text);
               },
               cursorColor: Colors.blueGrey[400],
-              style: const TextStyle(color: Colors.black),
-              decoration: const InputDecoration(
-                hintStyle: TextStyle(color: Colors.grey),
+              style: const TextStyle(color: Colors.black, fontSize: 16),
+              decoration: InputDecoration(
+                hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
                 hintText: "Type '/' to see prompts",
-                border: OutlineInputBorder(),
+                contentPadding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 12.0),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.blue, width: 2), // Modify focus border color
+                  borderRadius: BorderRadius.circular(8.0),
+                  borderSide: const BorderSide(color: Color.fromARGB(255, 175, 35, 200), width: 2),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.black, width: 1), // Modify non-focus border color
+                  borderRadius: BorderRadius.circular(8.0),
+                  borderSide: const BorderSide(color: Colors.black, width: 1),
                 ),
               ),
               onSubmitted: (value) async {
-                try {
-                  await _sendMessage();
-                } catch (e) {
-                  if (e == 'Not enough token') {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('You do not have enough tokens!')),
-                    );
-                  }
-                  else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('An error occurred: $e')),
-                    );
-                  }
-                }
+                await _handleSendMessage();
               },
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.send),
-            style: IconButton.styleFrom(backgroundColor: Colors.purple),
-            color: Colors.white,
-            hoverColor: Colors.blue.shade200.withOpacity(0.3),
-            onPressed: () async {
-              try {
-                await _sendMessage();
-              } catch (e) {
-                if (e == 'Not enough token') {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('You do not have enough tokens!')),
-                  );
-                }
-                else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('An error occurred: $e')),
-                  );
-                }
-              }
-            }
+          const SizedBox(width: 8.0), // Khoảng cách giữa TextField và nút gửi
+          // Nút gửi với giao diện tùy chỉnh
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.purple,
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.send),
+              color: Colors.white,
+              onPressed: () async {
+                await _handleSendMessage();
+              },
+            ),
           ),
         ],
       ),
     );
+  }
+
+  // Hàm xử lý gửi tin nhắn
+  Future<void> _handleSendMessage() async {
+    try {
+      await _sendMessage();
+    } catch (e) {
+      final snackBar = SnackBar(
+        content: Text(
+          e == 'Not enough token'
+              ? 'You do not have enough tokens!'
+              : 'An error occurred: $e',
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.redAccent,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
   }
 
   void _handleSlashInput(String text) {
@@ -641,7 +645,7 @@ class _ChatPageState extends State<ChatPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
         ],
       ),
@@ -693,10 +697,10 @@ class _ChatPageState extends State<ChatPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Rename Thread'),
+        title: const Text('Rename Thread'),
         content: TextField(
           controller: _renameController,
-          decoration: InputDecoration(hintText: 'Enter new title'),
+          decoration: const InputDecoration(hintText: 'Enter new title'),
         ),
         actions: [
           TextButton(
@@ -704,11 +708,11 @@ class _ChatPageState extends State<ChatPage> {
               _renameThread(thread.id);
               Navigator.pop(context);
             },
-            child: Text('Save'),
+            child: const Text('Save'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
         ],
       ),

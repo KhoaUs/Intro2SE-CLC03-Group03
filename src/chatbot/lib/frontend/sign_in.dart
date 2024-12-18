@@ -217,6 +217,9 @@ class _SignInPageState extends State<SignInPage> {
                             color: Colors.grey,
                           ),
                         ),
+                        onSubmitted: (value) {
+                          _signIn(); // Gọi hàm đăng nhập khi nhấn Enter
+                        },
                       ),
                       const SizedBox(height: 15),
                       TextButton(
@@ -266,16 +269,19 @@ class _SignInPageState extends State<SignInPage> {
                             ),
                             borderRadius: BorderRadius.circular(50),
                           ),
-                          child: Center(
-                            child: _isLoading
-                                ? const CircularProgressIndicator(color: Colors.white)
-                                : const Text(
-                                    'Login',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
+                          child: Padding( // Thêm padding để tạo khoảng cách hợp lý
+                            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 34),
+                            child: Center(
+                              child: _isLoading
+                                  ? const CircularProgressIndicator(color: Colors.white)
+                                  : const Text(
+                                      'Login',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
-                                  ),
+                            ),
                           ),
                         ),
                       ),

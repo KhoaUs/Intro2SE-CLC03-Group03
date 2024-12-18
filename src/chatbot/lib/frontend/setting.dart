@@ -7,7 +7,7 @@ import '../backend/config/logger.dart';
 class SettingsPage extends StatefulWidget {
   final FirebaseAuth auth;
 
-  const SettingsPage({Key? key, required this.auth}) : super(key: key);
+  const SettingsPage({super.key, required this.auth});
 
   // Expose the settings dialog as a static method for reuse
   static void openSettingsDialog(BuildContext context, FirebaseAuth auth) {
@@ -103,10 +103,26 @@ class _SettingsPageState extends State<SettingsPage> with SingleTickerProviderSt
                     style: const TextStyle(fontSize: 18), // Increased font size
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    'Token: ${currentUser!.token}',
-                    style: const TextStyle(fontSize: 18), // Increased font size
+                  Text.rich(
+                    TextSpan(
+                      children: [
+                        const TextSpan(
+                          text: 'Token: ',
+                          style: TextStyle(fontSize: 18), // Phần "Token:" giữ nguyên định dạng
+                        ),
+                        TextSpan(
+                          text: currentUser!.plan == 'Pro' ? 'Unlimited' : currentUser!.token.toString(),
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: currentUser!.plan == 'Pro' ? FontWeight.bold : FontWeight.normal,
+                            color: currentUser!.plan == 'Pro' ? const Color.fromARGB(255, 56, 25, 109) : Colors.black,
+                            fontStyle: currentUser!.plan == 'Pro' ? FontStyle.normal : FontStyle.normal,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
+
                   const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
@@ -215,7 +231,7 @@ class _SettingsPageState extends State<SettingsPage> with SingleTickerProviderSt
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(planName, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(planName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 10),
           for (var benefit in benefits)
             Text('• $benefit', style: const TextStyle(fontSize: 14)),
@@ -377,8 +393,8 @@ class _SettingsPageState extends State<SettingsPage> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     // Set fixed dialog dimensions
-    final dialogWidth = 600.0; // Fixed width for the dialog
-    final dialogHeight = 500.0; // Fixed height for the dialog
+    const dialogWidth = 600.0; // Fixed width for the dialog
+    const dialogHeight = 500.0; // Fixed height for the dialog
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
