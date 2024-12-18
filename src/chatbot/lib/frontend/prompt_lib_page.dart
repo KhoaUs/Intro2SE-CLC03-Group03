@@ -151,6 +151,25 @@ class _PromptLibraryState extends State<PromptLibrary> {
               if (title.isNotEmpty && text.isNotEmpty) {
                 await Prompt.addPrompt(widget.auth.currentUser!.uid, title, text);
               }
+              else{
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text(
+                      'Please fill in both fields',
+                      style: TextStyle(
+                        color: Colors.white, // Màu chữ
+                        fontWeight: FontWeight.bold, // Chữ đậm
+                        fontSize: 16, // Kích thước chữ
+                      ),
+                    ),
+                    backgroundColor: Colors.red, // Màu nền nổi bật
+                    behavior: SnackBarBehavior.floating, // Kiểu hiển thị nổi
+                    margin: const EdgeInsets.all(16), // Khoảng cách đến các cạnh
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10), // Bo góc
+                    ),
+                  ),
+                );
+              }
               Navigator.pop(context);
             },
             child: const Text('Save'),
@@ -193,6 +212,24 @@ class _PromptLibraryState extends State<PromptLibrary> {
               final newText = _promptController.text.trim();
               if (newTitle.isNotEmpty && newText.isNotEmpty) {
                 await Prompt.editPrompt(widget.auth.currentUser!.uid, prompt.id, newTitle, newText);
+              }else{
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text(
+                      'Please fill in both fields',
+                      style: TextStyle(
+                        color: Colors.white, // Màu chữ
+                        fontWeight: FontWeight.bold, // Chữ đậm
+                        fontSize: 16, // Kích thước chữ
+                      ),
+                    ),
+                    backgroundColor: Colors.red, // Màu nền nổi bật
+                    behavior: SnackBarBehavior.floating, // Kiểu hiển thị nổi
+                    margin: const EdgeInsets.all(16), // Khoảng cách đến các cạnh
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10), // Bo góc
+                    ),
+                  ),
+                );
               }
               Navigator.pop(context);
             },
