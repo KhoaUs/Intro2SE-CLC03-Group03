@@ -40,7 +40,10 @@ class _PromptLibraryState extends State<PromptLibrary> {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final prompts = snapshot.data!;
+          // Lấy danh sách prompts và sắp xếp theo thứ tự A-Z
+          final prompts = snapshot.data!..sort((a, b) => a.title.compareTo(b.title));
+
+          // Lọc prompts theo từ khóa tìm kiếm
           _filteredPrompts = prompts.where((prompt) {
             return prompt.title
                 .toLowerCase()
@@ -49,7 +52,7 @@ class _PromptLibraryState extends State<PromptLibrary> {
 
           return Column(
             children: [
-              // Search bar and Add button in a row
+              // Search bar và Add button
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Row(
@@ -73,7 +76,7 @@ class _PromptLibraryState extends State<PromptLibrary> {
                   ],
                 ),
               ),
-              // List of Prompts
+              // Danh sách Prompts
               Expanded(
                 child: ListView.builder(
                   itemCount: _filteredPrompts.length,
@@ -83,7 +86,11 @@ class _PromptLibraryState extends State<PromptLibrary> {
                       margin: const EdgeInsets.all(8.0),
                       child: ListTile(
                         title: Text(prompt.title),
-                        subtitle: Text(prompt.text),
+                        subtitle: Text(
+                          prompt.text.length > 100
+                              ? '${prompt.text.substring(0, 100)}...'
+                              : prompt.text,
+                        ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -101,7 +108,6 @@ class _PromptLibraryState extends State<PromptLibrary> {
                             ),
                           ],
                         ),
-                        // Hiển thị chi tiết khi nhấn vào toàn bộ mục
                         onTap: () => _showPromptDetails(prompt),
                       ),
                     );
