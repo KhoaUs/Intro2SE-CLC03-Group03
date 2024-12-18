@@ -83,7 +83,11 @@ class _PromptLibraryState extends State<PromptLibrary> {
                       margin: const EdgeInsets.all(8.0),
                       child: ListTile(
                         title: Text(prompt.title),
-                        subtitle: Text(prompt.text),
+                        subtitle: Text(
+                          prompt.text.length > 100
+                              ? '${prompt.text.substring(0, 100)}...' // Hiển thị tóm tắt 100 ký tự
+                              : prompt.text, // Hiển thị nội dung đầy đủ nếu ngắn
+                        ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -101,8 +105,7 @@ class _PromptLibraryState extends State<PromptLibrary> {
                             ),
                           ],
                         ),
-                        // Hiển thị chi tiết khi nhấn vào toàn bộ mục
-                        onTap: () => _showPromptDetails(prompt),
+                        onTap: () => _showPromptDetails(prompt), // Nhấn vào mục sẽ hiển thị chi tiết
                       ),
                     );
                   },
