@@ -4,13 +4,12 @@ import '../../backend/db/message.dart';
 // import './message_widget.dart';
 
 class MessageList extends StatelessWidget {
-  final List<Message> messages; // Danh sách tin nhắn
+  final List<Message> messages;
   final ScrollController _scrollController = ScrollController();
-  MessageList({super.key, required this.messages});
+  MessageList({required this.messages, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // Tự động cuộn tới cuối khi xây dựng
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
         _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
@@ -18,30 +17,32 @@ class MessageList extends StatelessWidget {
     });
 
     return ListView.builder(
+      padding: EdgeInsets.all(8.0),
       controller: _scrollController,
-      itemCount: messages.length, // Số lượng tin nhắn
+      itemCount: messages.length,
       itemBuilder: (context, index) {
         final message = messages[index];
-        return ListTile(
-          title: Align(
-            alignment: message.sender == 'user'
-                ? Alignment.centerRight // Tin nhắn của người dùng
-                : Alignment.centerLeft, // Tin nhắn từ AI
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-              decoration: BoxDecoration(
-                color: message.sender == 'user'
-                    ? Colors.blueAccent // Tin nhắn người dùng có màu xanh
-                    : Colors.grey[300], // Tin nhắn AI có màu xám
-                borderRadius: BorderRadius.circular(8),
+        final isUserMessage = message.sender == 'user';
+
+        return Align(
+          alignment: isUserMessage ? Alignment.centerRight : Alignment.centerLeft,
+          child: Container(
+            margin: EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+            decoration: BoxDecoration(
+              color: isUserMessage ? Colors.grey[600] : Colors.blueGrey[100],
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(12),
+                topRight: Radius.circular(12),
+                bottomLeft: isUserMessage ? Radius.circular(12) : Radius.zero,
+                bottomRight: isUserMessage ? Radius.zero : Radius.circular(12),
               ),
-              child: Text(
-                message.content, // Nội dung tin nhắn
-                style: TextStyle(
-                  color: message.sender == 'user'
-                      ? Colors.white // Màu chữ tin nhắn người dùng
-                      : Colors.black, // Màu chữ tin nhắn AI
-                ),
+            ),
+            constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+            child: Text(
+              message.content,
+              style: TextStyle(
+                color: isUserMessage ? Colors.white.withOpacity(0.9) : Colors.black87,
               ),
             ),
           ),

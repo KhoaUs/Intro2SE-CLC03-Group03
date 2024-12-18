@@ -197,8 +197,20 @@ class _PromptLibraryState extends State<PromptLibrary> {
           children: [
             TextField(
               controller: _titleController,
-              decoration: const InputDecoration(hintText: 'Enter new title'),
+              style: const TextStyle(color: Colors.black),
+              decoration: const InputDecoration(
+                hintText: 'Enter new title',
+                hintStyle: TextStyle(color: Colors.grey),
+                border: OutlineInputBorder(),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.yellow, width: 2),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.pink, width: 1),
+                ),
+              ),
             ),
+            const SizedBox(height: 8),
             TextField(
               controller: _promptController,
               decoration: const InputDecoration(hintText: 'Enter new content'),

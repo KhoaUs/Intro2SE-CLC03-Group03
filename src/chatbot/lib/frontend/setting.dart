@@ -111,9 +111,7 @@ class _SettingsPageState extends State<SettingsPage> with SingleTickerProviderSt
                   ElevatedButton(
                     onPressed: () {
                       _loadUserInfo();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('User data refreshed')),
-                      );
+                      _showSuccessMessage('User data refreshed');
                     },
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
@@ -229,25 +227,47 @@ class _SettingsPageState extends State<SettingsPage> with SingleTickerProviderSt
   // Upgrade Plan Logic
   Future<void> _upgradePlan() async {
     try {
+      // Get the current user's document from Firestore
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.auth.currentUser!.uid)
+          .get();
+
+      // Check if the current user already has the 'Pro' plan
+      if (userDoc.exists && userDoc['plan'] == 'Pro') {
+        // If the user is already on the 'Pro' plan, show a message and do nothing
+        _showErrorMessage('You are already on the Pro plan!');
+        return;
+      }
+
+      // Update the plan to 'Pro' and token to a large value in the Firestore database
       await FirebaseFirestore.instance
           .collection('users')
           .doc(widget.auth.currentUser!.uid)
-          .update({'plan': 'Pro'});
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Plan upgraded successfully!')),
-      );
+          .update({'plan': 'Pro', 'token': 999999999});
+
+      // Update the current user plan and token in local state
+      setState(() {
+        if (currentUser != null) {
+          currentUser!.plan = 'Pro'; // Update plan to Pro
+          currentUser!.token = 999999999; // Update token to 'Unlimited' (large value)
+        }
+      });
+
       MyLogger.i('User upgraded to Pro plan');
+      _showSuccessMessage('Plan upgraded successfully!');
     } catch (e) {
       MyLogger.e('Error upgrading plan: $e');
       _showErrorMessage('Failed to upgrade plan. Please try again later.');
     }
   }
 
+
   // Logout
   Future<void> _logOut() async {
     try {
       await widget.auth.signOut();
-      Navigator.popUntil(context, ModalRoute.withName('/signin'));
+      Navigator.pushReplacementNamed(context, '/signin');
       MyLogger.i('User signed out');
     } catch (e) {
       MyLogger.e('Error signing out: $e');
@@ -304,38 +324,112 @@ class _SettingsPageState extends State<SettingsPage> with SingleTickerProviderSt
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
-      child: Container(
-        // Set fixed width and height for the dialog
-        width: 500, // Fixed width (adjust as needed)
-        height: 500, // Fixed height (adjust as needed)
-        child: Column(
-          children: [
-            _buildDialogHeader(),
-            const Divider(height: 1),
-            TabBar(
-              controller: _tabController,
-              tabs: const [
-                Tab(text: 'General'),
-                Tab(text: 'Upgrade Plan'),
-              ],
-            ),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
+    // Error Message Dialog
+  void _showSuccessMessage(String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          contentPadding: const EdgeInsets.all(15),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildGeneralSettingsContent(),
-                  _buildUpgradePlanContent(),
+                  const Text(
+                    "Success",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.close,
+                      color: Colors.black54,
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
                 ],
               ),
+              const SizedBox(height: 10),
+              Text(
+                message,
+                style: const TextStyle(fontSize: 16),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    // Set fixed dialog dimensions
+    final dialogWidth = 600.0; // Fixed width for the dialog
+    final dialogHeight = 500.0; // Fixed height for the dialog
+
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+      child: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: dialogWidth,
+                maxHeight: dialogHeight,
+                minWidth: 300, // Minimum width for small screens
+                minHeight: 300, // Minimum height for small screens
+              ),
+              child: Container(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min, // Ensure it takes only necessary space
+                  children: [
+                    // Dialog Header
+                    _buildDialogHeader(),
+                    const Divider(height: 1),
+                    // Tab Bar
+                    TabBar(
+                      controller: _tabController,
+                      tabs: const [
+                        Tab(text: 'General'),
+                        Tab(text: 'Upgrade Plan'),
+                      ],
+                    ),
+                    // TabBarView wrapped with Expanded
+                    Expanded(
+                      child: TabBarView(
+                        controller: _tabController,
+                        children: [
+                          SingleChildScrollView(
+                            child: _buildGeneralSettingsContent(),
+                          ),
+                          SingleChildScrollView(
+                            child: _buildUpgradePlanContent(),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
-}
+  }
 
 }
