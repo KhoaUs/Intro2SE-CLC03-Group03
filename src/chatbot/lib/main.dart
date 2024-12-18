@@ -30,7 +30,6 @@ class MyApp extends StatelessWidget {
         '/chat': (context) => ChatPage(auth: FirebaseAuth.instance),
         '/chat/setting': (context) => SettingsPage(auth: FirebaseAuth.instance),
       },
-      debugShowCheckedModeBanner: false,
     );
   }
 }
