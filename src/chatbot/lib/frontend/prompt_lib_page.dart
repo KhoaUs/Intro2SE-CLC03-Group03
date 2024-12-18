@@ -101,6 +101,8 @@ class _PromptLibraryState extends State<PromptLibrary> {
                             ),
                           ],
                         ),
+                        // Hiển thị chi tiết khi nhấn vào toàn bộ mục
+                        onTap: () => _showPromptDetails(prompt),
                       ),
                     );
                   },
@@ -199,42 +201,54 @@ class _PromptLibraryState extends State<PromptLibrary> {
     );
   }
 
-  // Delete Prompt
+  // Delete Prompt with confirmation
   Future<void> _deletePrompt(String promptId) async {
-    await Prompt.deletePrompt(widget.auth.currentUser!.uid, promptId);
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Deletion'),
+        content: const Text('Are you sure you want to delete this prompt?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false), // Trả về "false" khi hủy
+            child: const Text('No'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true), // Trả về "true" khi đồng ý
+            child: const Text('Yes'),
+          ),
+        ],
+      ),
+    );
+
+    // Nếu người dùng chọn "Yes", thực hiện xóa
+    if (shouldDelete == true) {
+      await Prompt.deletePrompt(widget.auth.currentUser!.uid, promptId);
+    }
   }
 
-  // Show Prompt Details Dialog
-  void _showPromptDetails(Prompt prompt) {
-    TextEditingController _inputController = TextEditingController();
 
+  // Show Prompt Details Dialog
+  // Show Prompt Details Dialog
+  Future<void> _showPromptDetails(Prompt prompt) async {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Details: ${prompt.title}'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('Content: ${prompt.text}'),
-            const SizedBox(height: 10),
-            TextField(
-              controller: _inputController,
-              decoration: const InputDecoration(
-                hintText: 'Enter input to apply with this prompt...',
-              ),
-            ),
-          ],
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Content:', style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              Text(prompt.text),
+            ],
+          ),
         ),
         actions: [
           TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // Optionally handle applying the prompt with user input
-            },
-            child: const Text('Apply'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(context), // Đóng dialog
             child: const Text('Close'),
           ),
         ],
