@@ -40,7 +40,10 @@ class _PromptLibraryState extends State<PromptLibrary> {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final prompts = snapshot.data!;
+          // Lấy danh sách prompts và sắp xếp theo thứ tự A-Z
+          final prompts = snapshot.data!..sort((a, b) => a.title.compareTo(b.title));
+
+          // Lọc prompts theo từ khóa tìm kiếm
           _filteredPrompts = prompts.where((prompt) {
             return prompt.title
                 .toLowerCase()
@@ -49,7 +52,7 @@ class _PromptLibraryState extends State<PromptLibrary> {
 
           return Column(
             children: [
-              // Search bar and Add button in a row
+              // Search bar và Add button
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Row(
@@ -73,7 +76,7 @@ class _PromptLibraryState extends State<PromptLibrary> {
                   ],
                 ),
               ),
-              // List of Prompts
+              // Danh sách Prompts
               Expanded(
                 child: ListView.builder(
                   itemCount: _filteredPrompts.length,
@@ -85,8 +88,8 @@ class _PromptLibraryState extends State<PromptLibrary> {
                         title: Text(prompt.title),
                         subtitle: Text(
                           prompt.text.length > 100
-                              ? '${prompt.text.substring(0, 100)}...' // Hiển thị tóm tắt 100 ký tự
-                              : prompt.text, // Hiển thị nội dung đầy đủ nếu ngắn
+                              ? '${prompt.text.substring(0, 100)}...'
+                              : prompt.text,
                         ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -105,7 +108,7 @@ class _PromptLibraryState extends State<PromptLibrary> {
                             ),
                           ],
                         ),
-                        onTap: () => _showPromptDetails(prompt), // Nhấn vào mục sẽ hiển thị chi tiết
+                        onTap: () => _showPromptDetails(prompt),
                       ),
                     );
                   },
