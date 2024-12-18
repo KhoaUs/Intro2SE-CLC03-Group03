@@ -31,8 +31,14 @@ class _ChatPageState extends State<ChatPage> {
   late ChatService _chatService;
   String? userId;
   String _selectedModel = GEMINI_MODEL_1_0_PRO; // Default AI model
+  String? hoveredThreadId;
+  String _searchPromptQuery = '';
+  String _selectedFilter = "All"; // Default filter 
   bool _showPrompt = false;
+  bool _isAscending = true; // Default sorting order: ascending
+  final Map<int,bool> _hoverStates = {}; // Map to track hover state for each promp
   List<Prompt> prompts = []; // List of fetched prompts
+  Prompt? _selectedPrompt; // Track the currently selected prompt
 
   @override
   void initState() {
@@ -75,7 +81,14 @@ class _ChatPageState extends State<ChatPage> {
       ),
       drawer: _buildDrawer(),
       body: selectedThread == null
-          ? const Center(child: Text('Select a thread to chat'))
+          ? const Center(child: Text(
+            'Select a thread to chat',
+            style: TextStyle(
+              fontSize: 25,
+              // fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),)
+          )
           : Column(
               children: [
                 Expanded(
@@ -100,123 +113,383 @@ class _ChatPageState extends State<ChatPage> {
                           .map((msg) => Message.fromMap(msg))
                           .toList();
 
-                      return MessageList(messages: messages);
+                      // return MessageList(messages: messages);
+                      return Column(
+                        children: [
+                          // If there are no messages, center the "How can I help you?" message on the entire screen
+                          if (messages.isEmpty)
+                            const Expanded(
+                              child: Center(
+                                child: Text(
+                                  "How can I help you?",
+                                  style: TextStyle(
+                                    fontSize: 25,
+                                    // fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          // If there are messages, show them as normal
+                          if (messages.isNotEmpty)
+                            Expanded(child: MessageList(messages: messages)),
+                        ],
+                      );
                     },
                   ),
                 ),
                 _buildMessageInput(),
                 if (_showPrompt)
                   Container(
-                    margin: const EdgeInsets.only(top: 8.0),
-                    height: 100,
+                    // margin: const EdgeInsets.only(top: 8.0),
+                    margin: const EdgeInsets.all(8.0),
+                    height: 300,
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.grey),
                       borderRadius: BorderRadius.circular(8.0),
+                      boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
                     ),
-                    child: ListView.builder(
-                      itemCount: prompts.length,
-                      itemBuilder: (context, index) {
-                        return ListTile(
-                          title: Text(prompts[index].title), // Display prompt title
-                          onTap: () {
-                            // Replace '/' with selected prompt's text
-                            String currentText = _messageController.text;
-                            _messageController.text = currentText.replaceAll('/', prompts[index].text);
-                            _messageController.selection = TextSelection.fromPosition(
-                              TextPosition(offset: _messageController.text.length),
-                            );
-                            setState(() {
-                              _showPrompt = false;
-                            });
-                          },
-                        );
-                      },
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        "Prompts List",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey.shade800,
+                        ),
+                      ),
                     ),
-                  ),
-              ],
-            ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: TextField(
+                        decoration: InputDecoration(
+                          hintText: "Search prompts...",
+                          prefixIcon: Icon(Icons.search, color: Colors.grey.shade600),
+                          filled: true,
+                          fillColor: Colors.white,
+                          hoverColor: Colors.blueGrey.shade300,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        onChanged: (query) {
+                          setState(() {
+                            _searchPromptQuery = query;
+                          });
+                        },
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            _buildFilterChip("All", isSelected: _selectedFilter == "All"),
+                            _buildFilterChip("Asc", isSelected: _selectedFilter == "Asc"),
+                            _buildFilterChip("Des", isSelected: _selectedFilter == "Des"),
+                            // Call the popup function
+                            // _buildPopupChip(context, FirebaseAuth.instance)
+                          ],
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: filteredAndSortedPrompts.length,
+                        itemBuilder: (context, index) {
+                          return MouseRegion(
+                            onEnter: (_) {
+                              setState(() {
+                                _hoverStates[index] = true; // Track hover for specific prompt
+                              });
+                            },
+                            onExit: (_) {
+                              setState(() {
+                                _hoverStates[index] = false; // Reset hover for specific prompt
+                              });
+                            },
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _selectedPrompt = filteredAndSortedPrompts[index];
+                                });
+                                String currentText = _messageController.text;
+                                _messageController.text = currentText.replaceAll('/', filteredAndSortedPrompts[index].text);
+                                _messageController.selection = TextSelection.fromPosition(
+                                  TextPosition(offset: _messageController.text.length),
+                                );
+                                setState(() {
+                                  _showPrompt = false;
+                                });
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0),
+                                padding: const EdgeInsets.all(12.0),
+                                decoration: BoxDecoration(
+                                  color: //_selectedPrompt == filteredAndSortedPrompts[index]
+                                      //? Colors.blueGrey.shade100 : // Selected state color
+                                      _hoverStates[index] == true
+                                          ? Colors.blueGrey.shade200 // Hovered state color for specific prompt
+                                          : Colors.white, // Default color
+                                  borderRadius: BorderRadius.circular(8.0),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black12,
+                                      blurRadius: 6,
+                                      offset: Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      filteredAndSortedPrompts[index].title,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.grey.shade800,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4), // Space between title and text
+                                    Text(
+                                      filteredAndSortedPrompts[index].text, // Display the prompt text
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            ]
+        )
     );
+  }
+
+  Widget _buildFilterChip(String label, {bool isSelected = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8.0),
+      child: FilterChip(
+        label: Text(label),
+        labelStyle: TextStyle(
+          color: isSelected ? Colors.white : Colors.grey.shade700,
+        ),
+        backgroundColor: Colors.grey.shade300,
+        selectedColor: Colors.blueGrey.shade600,
+        selected: isSelected,
+        onSelected: (bool selected) {
+          setState(() {
+            if (label == "All") {
+              _selectedFilter = "All";
+            } else if (label == "Asc") {
+              _selectedFilter = "Asc";
+              _isAscending = true;
+              _sortPrompts();
+            } else if (label == "Des") {
+              _selectedFilter = "Des";
+              _isAscending = false;
+              _sortPrompts();
+            }
+          });
+        },
+      ),
+    );
+  }
+
+  void _sortPrompts() {
+    setState(() {
+      prompts.sort((a, b) {
+        if (_isAscending) {
+          return a.title.compareTo(b.title); // Ascending order
+        } else {
+          return b.title.compareTo(a.title); // Descending order
+        }
+      });
+    });
+  }
+
+  // Filter prompts based on search query and selected filter
+  List<Prompt> get filteredAndSortedPrompts {
+    List<Prompt> filteredList = prompts;
+
+    // Apply search filter
+    if (_searchPromptQuery.isNotEmpty) {
+      filteredList = filteredList
+          .where((prompt) =>
+              prompt.title.toLowerCase().contains(_searchPromptQuery.toLowerCase()))
+          .toList();
+    }
+
+    // Apply sort filter
+    if (_selectedFilter == "Asc") {
+      filteredList.sort((a, b) => a.title.compareTo(b.title)); // Ascending order
+    } else if (_selectedFilter == "Des") {
+      filteredList.sort((a, b) => b.title.compareTo(a.title)); // Descending order
+    }
+
+    return filteredList;
   }
 
   Widget _buildDrawer() {
     return Drawer(
-      child: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('users')
-            .doc(userId)
-            .collection('threads')
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          final threads = snapshot.data!.docs
-              .map((doc) => Thread.fromMap(doc.data() as Map<String, dynamic>))
-              .toList();
-          return ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              UserAccountsDrawerHeader(
-                accountName: Text(curUser!.name),
-                accountEmail: Text(widget.auth.currentUser?.email ?? 'No email'),
-                otherAccountsPictures: [
-                  IconButton(
-                    icon: const Icon(Icons.settings, color: Colors.white),
-                    onPressed: () {
-                      SettingsPage.openSettingsDialog(context, widget.auth);
-                      _loadUserData();
-                    }
-                  ),
-                ],
-              ),
-              // New option to change prompt
-              ListTile(
-                title: const Text('Prompt Library'),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => PromptLibrary(auth: widget.auth),
+      backgroundColor: Colors.grey.shade900,
+      child: Column(
+        children: [
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(userId)
+                  .collection('threads')
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                final threads = snapshot.data!.docs
+                    .map((doc) => Thread.fromMap(doc.data() as Map<String, dynamic>))
+                    .toList();
+
+                return ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    // "Prompt Library" section with icon
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: ListTile(
+                        leading: const Icon(Icons.book, color: Colors.white),
+                        title: const Text(
+                          'Prompt Library',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        hoverColor: Colors.blueGrey.shade500.withOpacity(0.3),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PromptLibrary(auth: widget.auth),
+                            ),
+                          );
+                        }
+                      ),
                     ),
-                  );
-                },
-              ),
-              ListTile(
-                title: const Text('Add Thread'),
-                onTap: () async {
-                  await _addThread();
-                  Navigator.pop(context);
-                },
-              ),
-              ...threads.map((thread) {
-                return ListTile(
-                  title: Text(thread.title),
-                  onTap: () {
-                    setState(() {
-                      selectedThread = thread;
-                    });
-                    Navigator.pop(context);
-                  },
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit),
-                        onPressed: () => _showRenameDialog(thread),
+                    const SizedBox(height: 16.0),
+                    // "Begin a New Chat" section with icon
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: ListTile(
+                        leading: const Icon(Icons.chat, color: Colors.white),
+                        title: const Text(
+                          'Begin a New Chat',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        hoverColor: Colors.blueGrey.shade500.withOpacity(0.3),
+                        onTap: () async {
+                          await _addThread();
+                          Navigator.pop(context);
+                        },
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () => _deleteThread(thread.id),
-                      ),
-                    ],
-                  ),
+                    ),
+                    // Threads list
+                    ...threads.map((thread) {
+                    // ..._getFilteredThreads().map((thread) {
+                      final isSelected = selectedThread?.id == thread.id;
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0),
+                        child: MouseRegion(
+                          onEnter: (event) => setState(() {
+                            hoveredThreadId = thread.id;
+                          }),
+                          onExit: (event) => setState(() {
+                            hoveredThreadId = null;
+                          }),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? Colors.blueGrey.shade700
+                                  : (hoveredThreadId == thread.id
+                                      ? Colors.blueGrey.shade800
+                                      : Colors.blueGrey.shade900),
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            child: ListTile(
+                              title: Text(
+                                thread.title,
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                              onTap: () {
+                                setState(() {
+                                  selectedThread = thread;
+                                });
+                                Navigator.pop(context);
+                              },
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit, color: Colors.white60),
+                                    hoverColor: Colors.blue.shade200.withOpacity(0.3),
+                                    onPressed: () => _showRenameDialog(thread),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete),
+                                    color: Colors.red,
+                                    hoverColor: Colors.red.shade300.withOpacity(0.3),
+                                    onPressed: () => _deleteThread(thread.id),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ],
                 );
-              }),
+              },
+            ),
+          ),
+          // User Profile Section at the Bottom
+          Column(
+            children: [
+              const Divider(color: Colors.white24),
+              ListTile(
+                leading: const Icon(Icons.person, color: Colors.white),
+                title: const Text(
+                  'User Profile',
+                  style: TextStyle(color: Colors.white),
+                ),
+                hoverColor: Colors.blueGrey.shade500.withOpacity(0.3),
+                onTap: () {
+                  // Navigator.pushNamed(context, '/chat/setting');
+                  SettingsPage.openSettingsDialog(context, widget.auth);
+                  _loadUserData();
+                },
+              ),
             ],
-          );
-        },
+          ),
+        ],
       ),
-      
     );
   }
 
