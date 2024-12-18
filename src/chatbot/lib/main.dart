@@ -11,10 +11,12 @@ void main() async  {
   WidgetsFlutterBinding.ensureInitialized();
   await FirebaseConfig.initializeFirebase();
 
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -27,6 +29,7 @@ class MyApp extends StatelessWidget {
         '/chat': (context) => ChatPage(auth: FirebaseAuth.instance),
         '/chat/setting': (context) => SettingsPage(auth: FirebaseAuth.instance),
       },
+      debugShowCheckedModeBanner: false,
     );
   }
 }

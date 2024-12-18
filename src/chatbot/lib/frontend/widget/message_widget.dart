@@ -3,10 +3,10 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 
 class MessageWidget extends StatelessWidget {
   const MessageWidget({
-    Key? key,
+    super.key,
     this.text,
     required this.isFromUser,
-  }) : super(key: key);
+  });
 
   final String? text;
   final bool isFromUser;
