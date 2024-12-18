@@ -50,6 +50,7 @@ class _ChatPageState extends State<ChatPage> {
     _loadUserData();
   }
 
+
   @override
   Widget build(BuildContext context) {
     if (userId == null) {

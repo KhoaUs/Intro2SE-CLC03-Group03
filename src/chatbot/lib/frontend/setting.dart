@@ -227,17 +227,30 @@ class _SettingsPageState extends State<SettingsPage> with SingleTickerProviderSt
   // Upgrade Plan Logic
   Future<void> _upgradePlan() async {
     try {
-      // Update the plan to 'Pro' in the Firestore database
+      // Get the current user's document from Firestore
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.auth.currentUser!.uid)
+          .get();
+
+      // Check if the current user already has the 'Pro' plan
+      if (userDoc.exists && userDoc['plan'] == 'Pro') {
+        // If the user is already on the 'Pro' plan, show a message and do nothing
+        _showErrorMessage('You are already on the Pro plan!');
+        return;
+      }
+
+      // Update the plan to 'Pro' and token to a large value in the Firestore database
       await FirebaseFirestore.instance
           .collection('users')
           .doc(widget.auth.currentUser!.uid)
           .update({'plan': 'Pro', 'token': 999999999});
 
-      // Update the current user token to 'Unlimited' (as a string)
+      // Update the current user plan and token in local state
       setState(() {
         if (currentUser != null) {
           currentUser!.plan = 'Pro'; // Update plan to Pro
-          currentUser!.token = 999999999; // Cast token to 'Unlimited' (string)
+          currentUser!.token = 999999999; // Update token to 'Unlimited' (large value)
         }
       });
 
@@ -248,8 +261,6 @@ class _SettingsPageState extends State<SettingsPage> with SingleTickerProviderSt
       _showErrorMessage('Failed to upgrade plan. Please try again later.');
     }
   }
-
-
 
 
   // Logout
