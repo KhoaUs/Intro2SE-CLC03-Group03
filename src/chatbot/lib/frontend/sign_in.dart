@@ -205,7 +205,7 @@ class _SignInPageState extends State<SignInPage> {
                 ),
                 const SizedBox(height: 20),
                 const Text(
-                  'Welcome to ChatGPT',
+                  'Welcome to AI Copilot',
                   style: TextStyle(
                     fontSize: 22,
                     color: Colors.white,

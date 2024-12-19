@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Firebase Auth Example',
-      initialRoute: '/signup',  // Khởi động ứng dụng ở trang đăng nhập
+      initialRoute: '/signin',  // Khởi động ứng dụng ở trang đăng nhập
       routes: {
         '/signin': (context) => const SignInPage(),  // Đăng nhập
         '/signup': (context) => const SignUpPage(),  // Đăng ký
