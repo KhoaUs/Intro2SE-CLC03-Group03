@@ -6,6 +6,7 @@ import 'frontend/sign_in.dart';
 import 'frontend/sign_up.dart';
 // import 'frontend/home.dart';
 import 'frontend/setting.dart';
+import 'frontend/forgot_password.dart';
 
 void main() async  {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,6 +30,7 @@ class MyApp extends StatelessWidget {
         // '/home': (context) => const HomePage(),
         '/chat': (context) => ChatPage(auth: FirebaseAuth.instance),
         '/chat/setting': (context) => SettingsPage(auth: FirebaseAuth.instance),
+        '/forgot-password': (context) => const ForgotPasswordPage(),
       },
     );
   }
