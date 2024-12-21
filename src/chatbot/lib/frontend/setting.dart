@@ -190,7 +190,7 @@ class _SettingsPageState extends State<SettingsPage> with SingleTickerProviderSt
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.only(left: 8.0), // Add some space between the boxes
-                  child: _buildPlanBox('Pro Plan', [
+                  child: _buildPlanBox('Pro Plan  -  \$20', [
                     'All basic features',
                     'Unlimited premium feature usage',
                     'Priority customer support',
@@ -203,7 +203,7 @@ class _SettingsPageState extends State<SettingsPage> with SingleTickerProviderSt
           const SizedBox(height: 20),
           Center(  // Center the "Upgrade to Pro" button
             child: ElevatedButton(
-              onPressed: _upgradePlan,
+              onPressed: _showBankCredentialsDialog,
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
               ),
@@ -220,10 +220,10 @@ class _SettingsPageState extends State<SettingsPage> with SingleTickerProviderSt
     return Container(
       width: (MediaQuery.of(context).size.width - 48) / 2, // Calculate width for both boxes
       decoration: BoxDecoration(
-        color: planName == 'Pro Plan' ? Colors.blue.shade100 : Colors.grey.shade200,
+        color: planName == 'Pro Plan  -  \$20' ? Colors.blue.shade100 : Colors.grey.shade200,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: planName == 'Pro Plan' ? Colors.blue : Colors.grey,
+          color: planName == 'Pro Plan  -  \$20' ? Colors.blue : Colors.grey,
           width: 2,
         ),
       ),
@@ -387,6 +387,115 @@ class _SettingsPageState extends State<SettingsPage> with SingleTickerProviderSt
         );
       },
     );
+  }
+
+  void _showBankCredentialsDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        final TextEditingController bankNameController = TextEditingController();
+        final TextEditingController accountNumberController = TextEditingController();
+        final TextEditingController cvvController = TextEditingController();
+
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.0),
+          ),
+          title: const Text(
+            'Enter Bank Credentials',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: bankNameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Bank Name',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: accountNumberController,
+                  decoration: const InputDecoration(
+                    labelText: 'Account Number',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: cvvController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: 'CVV',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    // Validate inputs
+                    final bankName = bankNameController.text.trim();
+                    final accountNumber = accountNumberController.text.trim();
+                    final cvv = cvvController.text.trim();
+
+                    if (bankName.isEmpty || accountNumber.isEmpty || cvv.isEmpty) {
+                      _showErrorMessage('Please fill in all fields.');
+                      return;
+                    }
+
+                    // Simulate bank credentials processing
+                    _processBankCredentials(bankName, accountNumber, cvv);
+                  },
+                  icon: const Icon(Icons.check_circle),
+                  label: const Text('Validate Credentials'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close the credentials dialog
+                    _upgradePlan(); // Call the upgrade plan process
+                  },
+                  icon: const Icon(Icons.upgrade),
+                  label: const Text('Complete Payment'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueAccent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text('Cancel'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Process Bank Credentials (Simulated)
+  void _processBankCredentials(String bankName, String accountNumber, String cvv) {
+    try {
+      // Simulate payment processing
+      MyLogger.i('Processing payment with bank: $bankName');
+      _showSuccessMessage('Bank credentials validated. Your Pro plan is activated!');
+    } catch (e) {
+      MyLogger.e('Error processing payment: $e');
+      _showErrorMessage('Failed to process payment. Please try again later.');
+    }
   }
 
 
