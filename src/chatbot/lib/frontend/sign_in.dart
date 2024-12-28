@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../backend/services/auth_service.dart';
 import '../backend/config/logger.dart';
-import 'forgot_password.dart';
 
 class SignInPage extends StatefulWidget {
   const SignInPage({super.key});
@@ -11,7 +10,8 @@ class SignInPage extends StatefulWidget {
   _SignInPageState createState() => _SignInPageState();
 }
 
-class _SignInPageState extends State<SignInPage> {
+class _SignInPageState extends State<SignInPage> with SingleTickerProviderStateMixin {
+
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final AuthService _authService = AuthService();
@@ -21,6 +21,29 @@ class _SignInPageState extends State<SignInPage> {
 
   // Track the loading state to prevent multiple requests
   bool _isLoading = false;
+
+  late AnimationController _controller;
+  late Animation<Color?> _colorAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 5),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _colorAnimation = ColorTween(
+      begin: Colors.grey[400],
+      end: Colors.grey[800], // Change the end color to a darker shade
+    ).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   // Sign-in method
   void _signIn() async {
@@ -76,7 +99,7 @@ class _SignInPageState extends State<SignInPage> {
     });
   }
 
-    void _showSuccessMessage(String message) {
+  void _showSuccessMessage(String message) {
     showDialog(
       context: context,
       barrierDismissible: true,
@@ -183,19 +206,24 @@ class _SignInPageState extends State<SignInPage> {
           constraints: BoxConstraints(
             minHeight: screenHeight > 600 ? screenHeight : 600, // Set a minimum height
           ),
-          child: Container(
-            width: screenWidth,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.purple,
-                  Colors.pink,
-                  Colors.red,
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
+          child: AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              return Container(
+                width: screenWidth,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      _colorAnimation.value!,
+                      Colors.grey[800]!,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: child,
+              );
+            },
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -307,7 +335,7 @@ class _SignInPageState extends State<SignInPage> {
                         child: Ink(
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [Colors.purple, Colors.pink, Colors.red],
+                              colors: [Colors.grey, Colors.black],
                               begin: Alignment.centerLeft,
                               end: Alignment.centerRight,
                             ),

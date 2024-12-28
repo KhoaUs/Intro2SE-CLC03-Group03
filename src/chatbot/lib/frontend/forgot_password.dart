@@ -9,12 +9,35 @@ class ForgotPasswordPage extends StatefulWidget {
   _ForgotPasswordPageState createState() => _ForgotPasswordPageState();
 }
 
-class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
+class _ForgotPasswordPageState extends State<ForgotPasswordPage> with SingleTickerProviderStateMixin {
   final TextEditingController _emailController = TextEditingController();
   final AuthService _authService = AuthService();
 
   // Track the loading state to prevent multiple requests
   bool _isLoading = false;
+
+  late AnimationController _controller;
+  late Animation<Color?> _colorAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 5),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _colorAnimation = ColorTween(
+      begin: Colors.grey[300],
+      end: Colors.grey[800],
+    ).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   // Method to send password reset email
   void _sendPasswordResetEmail() async {
@@ -154,19 +177,24 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           constraints: BoxConstraints(
             minHeight: screenHeight > 600 ? screenHeight : 600,
           ),
-          child: Container(
-            width: screenWidth,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.purple,
-                  Colors.pink,
-                  Colors.red,
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
+          child: AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              return Container(
+                width: screenWidth,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      _colorAnimation.value!,
+                      Colors.grey[800]!,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: child,
+              );
+            },
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -219,8 +247,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       ),
                       const SizedBox(height: 20),
                       ElevatedButton(
-                        onPressed:
-                            _isLoading ? null : _sendPasswordResetEmail, // Disable button when loading
+                        onPressed: _isLoading ? null : _sendPasswordResetEmail, // Disable button when loading
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.all(15),
                           shape: RoundedRectangleBorder(
@@ -229,13 +256,12 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                           elevation: 0,
                           backgroundColor: Colors.transparent,
                         ).copyWith(
-                          foregroundColor:
-                              WidgetStateProperty.all(Colors.white),
+                          foregroundColor: WidgetStateProperty.all(Colors.white),
                         ),
                         child: Ink(
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [Colors.purple, Colors.pink, Colors.red],
+                              colors: [Colors.grey, Colors.black],
                               begin: Alignment.centerLeft,
                               end: Alignment.centerRight,
                             ),
@@ -243,8 +269,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                           ),
                           child: Center(
                             child: _isLoading
-                                ? const CircularProgressIndicator(
-                                    color: Colors.white)
+                                ? const CircularProgressIndicator(color: Colors.white)
                                 : const Text(
                                     'Send Reset Email',
                                     style: TextStyle(
