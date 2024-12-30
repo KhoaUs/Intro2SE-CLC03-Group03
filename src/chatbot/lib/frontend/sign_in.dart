@@ -257,7 +257,7 @@ class _SignInPageState extends State<SignInPage> with SingleTickerProviderStateM
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: Colors.purple,
+                          color: Colors.black54,
                         ),
                       ),
                       const SizedBox(height: 15),
@@ -305,7 +305,7 @@ class _SignInPageState extends State<SignInPage> with SingleTickerProviderStateM
                         },
                         child: const Text(
                           'Forgot Password?',
-                          style: TextStyle(color: Colors.purple),
+                          style: TextStyle(color: Colors.black54),
                         ),
                       ),
                       const SizedBox(height: 15),
@@ -322,12 +322,12 @@ class _SignInPageState extends State<SignInPage> with SingleTickerProviderStateM
                           foregroundColor: WidgetStateProperty.all(Colors.white),
                           overlayColor: WidgetStateProperty.resolveWith<Color?>(
                             (states) {
-                              if (states.contains(WidgetState.pressed)) {
-                                return Colors.pinkAccent.withAlpha(50); // Ripple effect when pressed
-                              }
-                              if (states.contains(WidgetState.hovered)) {
-                                return Colors.pinkAccent.withAlpha(25); // Hover effect
-                              }
+                                if (states.contains(WidgetState.pressed)) {
+                                return Colors.black.withAlpha(50); // Ripple effect when pressed
+                                }
+                                if (states.contains(WidgetState.hovered)) {
+                                return Colors.grey.withAlpha(25); // Hover effect
+                                }
                               return null; // Default
                             },
                           ),
@@ -362,7 +362,10 @@ class _SignInPageState extends State<SignInPage> with SingleTickerProviderStateM
                         onPressed: () {
                           Navigator.pushReplacementNamed(context, '/signup');
                         },
-                        child: const Text("Don't have an account? Sign up."),
+                        child: const Text(
+                          "Don't have an account? Sign up.",
+                          style: TextStyle(color: Colors.black54),
+                        ),
                       ),
                     ],
                   ),

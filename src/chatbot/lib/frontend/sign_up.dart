@@ -219,7 +219,7 @@ class _SignUpPageState extends State<SignUpPage> with SingleTickerProviderStateM
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: Colors.purple,
+                          color: Colors.black54,
                         ),
                       ),
                       const SizedBox(height: 15),
@@ -301,10 +301,10 @@ class _SignUpPageState extends State<SignUpPage> with SingleTickerProviderStateM
                           overlayColor: WidgetStateProperty.resolveWith<Color?>(
                             (states) {
                               if (states.contains(WidgetState.pressed)) {
-                                return Colors.pinkAccent.withAlpha(50); // Ripple effect when pressed
+                              return Colors.black.withAlpha(50); // Ripple effect when pressed
                               }
                               if (states.contains(WidgetState.hovered)) {
-                                return Colors.pinkAccent.withAlpha(25); // Hover effect
+                              return Colors.grey.withAlpha(25); // Hover effect
                               }
                               return null; // Default
                             },
@@ -340,7 +340,10 @@ class _SignUpPageState extends State<SignUpPage> with SingleTickerProviderStateM
                         onPressed: () {
                           Navigator.pushReplacementNamed(context, '/signin');
                         },
-                        child: const Text("Already have an account? Sign in."),
+                        child: const Text(
+                          "Already have an account? Sign in.",
+                          style: TextStyle(color: Colors.black54),
+                        ),
                       ),
                     ],
                   ),

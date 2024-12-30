@@ -228,7 +228,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> with SingleTick
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: Colors.purple,
+                          color: Colors.black54,
                         ),
                       ),
                       const SizedBox(height: 15),
@@ -285,7 +285,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> with SingleTick
                         onPressed: () {
                           Navigator.pushReplacementNamed(context, '/signin');
                         },
-                        child: const Text("Back to Sign Up"),
+                        child: const Text("Back to Sign Up",
+                          style: TextStyle(
+                            color: Colors.black54,
+                          ),
+                        ),
                       ),
                     ],
                   ),
