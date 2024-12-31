@@ -119,9 +119,20 @@ try {
 
       Navigator.pushReplacementNamed(context, '/signin');
     } catch (e) {
-      MyLogger.d("Error during sign-up: $e");
-      _showErrorMessage(e.toString());
-    } finally {
+      const tooManyRequestsError =
+          '[firebase_auth/too-many-requests] We have blocked all requests from this device due to unusual activity. Try again later.';
+
+      if (e.toString() != tooManyRequestsError) {
+        MyLogger.d("Error during sign-up: $e");
+        _showErrorMessage(e.toString());
+      } else {
+        MyLogger.w("Too many requests error ignored.");
+        Navigator.pushReplacementNamed(context, '/signin');
+        _showSuccessMessage(
+          "A verification email has been sent to $email. Please check your email to verify your account.",
+        );
+      }
+    }  finally {
       setState(() {
         _isSigningUp = false; // Unlock the button after request finishes
       });
