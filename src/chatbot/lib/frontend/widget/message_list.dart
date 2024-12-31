@@ -30,7 +30,7 @@ class MessageList extends StatelessWidget {
             margin: EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
             padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
             decoration: BoxDecoration(
-              color: isUserMessage ? Colors.grey[600] : Colors.blueGrey[100],
+              color: isUserMessage ? Colors.purple[600] : Colors.purpleAccent[100],
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(12),
                 topRight: Radius.circular(12),

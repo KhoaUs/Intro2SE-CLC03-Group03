@@ -363,7 +363,7 @@ class _SettingsPageState extends State<SettingsPage> with SingleTickerProviderSt
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.red,
+                      color: Colors.green,
                     ),
                   ),
                   IconButton(

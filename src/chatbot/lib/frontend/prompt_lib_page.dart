@@ -32,6 +32,7 @@ class _PromptLibraryState extends State<PromptLibrary> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Prompt Library'),
+        backgroundColor: Colors.white,
       ),
       body: StreamBuilder<List<Prompt>>(
         stream: Prompt.fetchPrompts(widget.auth.currentUser!.uid),
@@ -60,10 +61,20 @@ class _PromptLibraryState extends State<PromptLibrary> {
                     Expanded(
                       child: TextField(
                         controller: _searchController,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           hintText: 'Search prompts...',
-                          prefixIcon: Icon(Icons.search),
-                          border: OutlineInputBorder(),
+                          prefixIcon: const Icon(Icons.search),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                            borderSide: const BorderSide(color: Color.fromARGB(255, 175, 35, 200), width: 2),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                            borderSide: const BorderSide(color: Colors.black, width: 1),
+                          ),
                         ),
                         onSubmitted: (value) => setState(() {}),
                       ),
@@ -83,6 +94,7 @@ class _PromptLibraryState extends State<PromptLibrary> {
                   itemBuilder: (context, index) {
                     final prompt = _filteredPrompts[index];
                     return Card(
+                      color: Colors.purple[200],
                       margin: const EdgeInsets.all(8.0),
                       child: ListTile(
                         title: Text(prompt.title),
