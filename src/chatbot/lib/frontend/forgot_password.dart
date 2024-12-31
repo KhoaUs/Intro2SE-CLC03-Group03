@@ -9,12 +9,35 @@ class ForgotPasswordPage extends StatefulWidget {
   _ForgotPasswordPageState createState() => _ForgotPasswordPageState();
 }
 
-class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
+class _ForgotPasswordPageState extends State<ForgotPasswordPage> with SingleTickerProviderStateMixin {
   final TextEditingController _emailController = TextEditingController();
   final AuthService _authService = AuthService();
 
   // Track the loading state to prevent multiple requests
   bool _isLoading = false;
+
+  late AnimationController _controller;
+  late Animation<Color?> _colorAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 5),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _colorAnimation = ColorTween(
+      begin: Colors.purple[400],
+      end: Colors.purple[800],
+    ).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   // Method to send password reset email
   void _sendPasswordResetEmail() async {
@@ -74,7 +97,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   IconButton(
                     icon: const Icon(
                       Icons.close,
-                      color: Colors.black54,
+                      color: Colors.purple,
                     ),
                     onPressed: () {
                       Navigator.of(context).pop();
@@ -123,7 +146,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   IconButton(
                     icon: const Icon(
                       Icons.close,
-                      color: Colors.black54,
+                      color: Colors.purple,
                     ),
                     onPressed: () {
                       Navigator.of(context).pop();
@@ -154,118 +177,126 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           constraints: BoxConstraints(
             minHeight: screenHeight > 600 ? screenHeight : 600,
           ),
-          child: Container(
-            width: screenWidth,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.purple,
-                  Colors.pink,
-                  Colors.red,
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const SizedBox(height: 60),
-                SizedBox(
-                  child: Image.asset('images/logo.png', fit: BoxFit.contain),
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  'Forgot Password',
-                  style: TextStyle(
-                    fontSize: 22,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Container(
-                  width: screenWidth * 0.3,
-                  constraints: const BoxConstraints(
-                    minWidth: 300,
-                  ),
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Column(
-                    children: [
-                      const Text(
-                        'Reset Your Password',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.purple,
-                        ),
-                      ),
-                      const SizedBox(height: 15),
-                      TextField(
-                        controller: _emailController,
-                        decoration: const InputDecoration(
-                          suffixIcon: Icon(
-                            FontAwesomeIcons.envelope,
-                            size: 17,
-                          ),
-                          hintText: 'Email',
-                          hintStyle: TextStyle(
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed:
-                            _isLoading ? null : _sendPasswordResetEmail, // Disable button when loading
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.all(15),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(50),
-                          ),
-                          elevation: 0,
-                          backgroundColor: Colors.transparent,
-                        ).copyWith(
-                          foregroundColor:
-                              WidgetStateProperty.all(Colors.white),
-                        ),
-                        child: Ink(
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Colors.purple, Colors.pink, Colors.red],
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                            ),
-                            borderRadius: BorderRadius.circular(50),
-                          ),
-                          child: Center(
-                            child: _isLoading
-                                ? const CircularProgressIndicator(
-                                    color: Colors.white)
-                                : const Text(
-                                    'Send Reset Email',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 15),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pushReplacementNamed(context, '/signin');
-                        },
-                        child: const Text("Back to Sign Up"),
-                      ),
+          child: AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              return Container(
+                width: screenWidth,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      _colorAnimation.value!,
+                      Colors.purple[800]!,
                     ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
                 ),
-              ],
+                child: child,
+              );
+            },
+            child: Center(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 60),
+                  // SizedBox(
+                  //   child: Image.asset('images/logo.png', fit: BoxFit.contain),
+                  // ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Forgot Password',
+                    style: TextStyle(
+                      fontSize: 22,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Container(
+                    width: screenWidth * 0.3,
+                    constraints: const BoxConstraints(
+                      minWidth: 300,
+                    ),
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      children: [
+                        const Text(
+                          'Reset Your Password',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.purple,
+                          ),
+                        ),
+                        const SizedBox(height: 15),
+                        TextField(
+                          controller: _emailController,
+                          decoration: const InputDecoration(
+                            suffixIcon: Icon(
+                              FontAwesomeIcons.envelope,
+                              size: 17,
+                            ),
+                            hintText: 'Email',
+                            hintStyle: TextStyle(
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        ElevatedButton(
+                          onPressed: _isLoading ? null : _sendPasswordResetEmail, // Disable button when loading
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.all(15),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                            elevation: 0,
+                            backgroundColor: Colors.transparent,
+                          ).copyWith(
+                            foregroundColor: WidgetStateProperty.all(Colors.white),
+                          ),
+                          child: Ink(
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Colors.purpleAccent, Colors.purple],
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
+                              ),
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                            child: Center(
+                              child: _isLoading
+                                  ? const CircularProgressIndicator(color: Colors.white)
+                                  : const Text(
+                                      'Send Reset Email',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 15),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pushReplacementNamed(context, '/signin');
+                          },
+                          child: const Text("Back to Sign Up",
+                            style: TextStyle(
+                              color: Colors.purple,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

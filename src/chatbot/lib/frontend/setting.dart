@@ -511,7 +511,7 @@ class _SettingsPageState extends State<SettingsPage> with SingleTickerProviderSt
         builder: (BuildContext context, BoxConstraints constraints) {
           return SingleChildScrollView(
             child: ConstrainedBox(
-              constraints: BoxConstraints(
+              constraints: const BoxConstraints(
                 maxWidth: dialogWidth,
                 maxHeight: dialogHeight,
                 minWidth: 300, // Minimum width for small screens
