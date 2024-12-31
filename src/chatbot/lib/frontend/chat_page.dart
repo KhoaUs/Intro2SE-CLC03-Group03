@@ -122,7 +122,7 @@ class _ChatPageState extends State<ChatPage> {
           ? const Center(child: Text(
                 'Select a thread to chat',
                 style: TextStyle(
-                  color: Colors.black,
+                  color: Colors.purple,
                   fontSize: 18
                 ),
               )
@@ -168,7 +168,7 @@ class _ChatPageState extends State<ChatPage> {
               child: Container(
                 margin: const EdgeInsets.all(8.0),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
+                  color: Colors.purple[400],
                   borderRadius: BorderRadius.circular(12.0),
                   boxShadow: const [
                     BoxShadow(
@@ -188,7 +188,7 @@ class _ChatPageState extends State<ChatPage> {
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Colors.grey.shade800,
+                          color: Colors.grey.shade900,
                         ),
                       ),
                     ),
@@ -265,7 +265,7 @@ class _ChatPageState extends State<ChatPage> {
                                       //? Colors.blueGrey.shade100 : // Selected state color
                                       _hoverStates[index] == true
                                           ? Colors.blueGrey.shade200 // Hovered state color for specific prompt
-                                          : Colors.white, // Default color
+                                          : Colors.purple[200], // Default color
                                   borderRadius: BorderRadius.circular(8.0),
                                   boxShadow: const [
                                     BoxShadow(
@@ -313,10 +313,10 @@ class _ChatPageState extends State<ChatPage> {
       child: FilterChip(
         label: Text(label),
         labelStyle: TextStyle(
-          color: isSelected ? Colors.white : Colors.grey.shade700,
+          color: isSelected ? Colors.white : Colors.grey.shade900,
         ),
-        backgroundColor: Colors.grey.shade300,
-        selectedColor: Colors.blueGrey.shade600,
+        backgroundColor: Colors.purpleAccent[300],
+        selectedColor: Colors.purple.shade600,
         selected: isSelected,
         onSelected: (bool selected) {
           setState(() {
@@ -384,7 +384,7 @@ class _ChatPageState extends State<ChatPage> {
 
   Widget _buildDrawer() {
     return Drawer(
-      backgroundColor: Colors.grey.shade900,
+      backgroundColor: Colors.purple[600],
       child: Column(
         children: [
           Expanded(
@@ -414,7 +414,7 @@ class _ChatPageState extends State<ChatPage> {
                           'Begin a New Chat',
                           style: TextStyle(color: Colors.white),
                         ),
-                        hoverColor: Colors.blueGrey.shade500.withOpacity(0.3),
+                        hoverColor: Colors.blueGrey.shade600.withOpacity(0.3),
                         onTap: () async {
                           await _addThread();
                           Navigator.pop(context);
@@ -438,10 +438,10 @@ class _ChatPageState extends State<ChatPage> {
                           child: Container(
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? Colors.blueGrey.shade700
+                                  ? Colors.purpleAccent[200]
                                   : (hoveredThreadId == thread.id
-                                      ? Colors.blueGrey.shade800
-                                      : Colors.blueGrey.shade900),
+                                      ? Colors.purple[200]
+                                      : Colors.purple[300]),
                               borderRadius: BorderRadius.circular(8.0),
                             ),
                             child: ListTile(
@@ -460,13 +460,13 @@ class _ChatPageState extends State<ChatPage> {
                                 children: [
                                   IconButton(
                                     icon: const Icon(Icons.edit, color: Colors.white60),
-                                    hoverColor: Colors.blue.shade200.withOpacity(0.3),
+                                    hoverColor: Colors.blue.shade300.withOpacity(0.3),
                                     onPressed: () => _showRenameDialog(thread),
                                   ),
                                   IconButton(
                                     icon: const Icon(Icons.delete),
                                     color: Colors.red,
-                                    hoverColor: Colors.red.shade300.withOpacity(0.3),
+                                    hoverColor: Colors.blue.shade300.withOpacity(0.3),
                                     onPressed: () => _deleteThread(thread.id),
                                   ),
                                 ],
