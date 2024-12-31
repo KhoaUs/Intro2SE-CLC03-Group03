@@ -96,17 +96,84 @@ class _SignUpPageState extends State<SignUpPage> with SingleTickerProviderStateM
       return;
     }
 
-    try {
-      await _authService.signUpWithEmail(email, password);
-      Navigator.pushReplacementNamed(context, '/chat');
+try {
+      User? curUser = await _authService.signUpWithEmail(email, password);
+      String username = email.split('@')[0];
+
+      final newUser = MyUser(
+        id: curUser?.uid,
+        name: username,
+        plan: 'free',
+        token: 100,
+      );
+
+      await newUser.saveToFirestore();
+
+      if (curUser != null && !curUser.emailVerified) {
+        await curUser.sendEmailVerification();
+
+        _showSuccessMessage(
+          "A verification email has been sent to $email. Please check your email to verify your account.",
+        );
+      }
+
+      Navigator.pushReplacementNamed(context, '/signin');
     } catch (e) {
-      _showErrorMessage(e.toString());
       MyLogger.d("Error during sign-up: $e");
+      _showErrorMessage(e.toString());
     } finally {
       setState(() {
-        _isSigningUp = false; // Reset signing up state after request
+        _isSigningUp = false; // Unlock the button after request finishes
       });
     }
+  }
+
+  void _showSuccessMessage(String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          contentPadding: const EdgeInsets.all(15),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Success",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.close,
+                      color: Colors.black54,
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(
+                message,
+                style: const TextStyle(fontSize: 16),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   void _showErrorMessage(String message) {
