@@ -384,7 +384,7 @@ class _ChatPageState extends State<ChatPage> {
 
   Widget _buildDrawer() {
     return Drawer(
-      backgroundColor: Colors.purple[600],
+      backgroundColor: const Color.fromARGB(255, 73, 11, 90),
       child: Column(
         children: [
           Expanded(
@@ -465,7 +465,7 @@ class _ChatPageState extends State<ChatPage> {
                                   ),
                                   IconButton(
                                     icon: const Icon(Icons.delete),
-                                    color: Colors.red,
+                                    color: const Color.fromARGB(255, 255, 99, 88),
                                     hoverColor: Colors.blue.shade300.withOpacity(0.3),
                                     onPressed: () => _deleteThread(thread.id),
                                   ),
@@ -554,7 +554,7 @@ class _ChatPageState extends State<ChatPage> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
-                  borderSide: const BorderSide(color: Color.fromARGB(255, 175, 35, 200), width: 2),
+                  borderSide: const BorderSide(color: Color.fromARGB(255, 218, 218, 218), width: 2),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
@@ -570,7 +570,7 @@ class _ChatPageState extends State<ChatPage> {
           // Nút gửi với giao diện tùy chỉnh
           Container(
             decoration: BoxDecoration(
-              color: Colors.purple,
+              color: const Color.fromARGB(255, 122, 122, 122),
               borderRadius: BorderRadius.circular(8.0),
             ),
             child: IconButton(
