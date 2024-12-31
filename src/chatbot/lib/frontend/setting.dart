@@ -491,7 +491,7 @@ class _SettingsPageState extends State<SettingsPage> with SingleTickerProviderSt
     try {
       // Simulate payment processing
       MyLogger.i('Processing payment with bank: $bankName');
-      _showSuccessMessage('Bank credentials validated. Your Pro plan is activated!');
+      _showSuccessMessage('Bank credentials validated.');
     } catch (e) {
       MyLogger.e('Error processing payment: $e');
       _showErrorMessage('Failed to process payment. Please try again later.');
