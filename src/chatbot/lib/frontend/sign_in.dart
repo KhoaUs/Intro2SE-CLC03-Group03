@@ -34,8 +34,8 @@ class _SignInPageState extends State<SignInPage> with SingleTickerProviderStateM
     )..repeat(reverse: true);
 
     _colorAnimation = ColorTween(
-      begin: Colors.grey[400],
-      end: Colors.grey[800], // Change the end color to a darker shade
+      begin: Colors.purple[400],
+      end: Colors.purple[800], // Change the end color to a darker shade
     ).animate(_controller);
   }
 
@@ -215,7 +215,7 @@ class _SignInPageState extends State<SignInPage> with SingleTickerProviderStateM
                   gradient: LinearGradient(
                     colors: [
                       _colorAnimation.value!,
-                      Colors.grey[800]!,
+                      Colors.purple[800]!,
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -224,153 +224,155 @@ class _SignInPageState extends State<SignInPage> with SingleTickerProviderStateM
                 child: child,
               );
             },
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const SizedBox(height: 60),
-                SizedBox(
-                  child: Image.asset('images/logo.png', fit: BoxFit.contain),
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  'Welcome to AI Copilot',
-                  style: TextStyle(
-                    fontSize: 22,
-                    color: Colors.white,
+            child: Center( // Center the content
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 60),
+                  // SizedBox(
+                  //   child: Image.asset('images/logo.png', fit: BoxFit.contain),
+                  // ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Welcome to AI Copilot',
+                    style: TextStyle(
+                      fontSize: 22,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                Container(
-                  width: screenWidth * 0.3,  // Adjust this width to be dynamic
-                  constraints: const BoxConstraints(
-                    minWidth: 300, // Minimum width for the login box
-                  ),
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Column(
-                    children: [
-                      const Text(
-                        'Sign In',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black54,
-                        ),
-                      ),
-                      const SizedBox(height: 15),
-                      TextField(
-                        controller: _emailController,
-                        decoration: const InputDecoration(
-                          suffixIcon: Icon(
-                            FontAwesomeIcons.envelope,
-                            size: 17,
-                          ),
-                          hintText: 'Email',
-                          hintStyle: TextStyle(
-                            color: Colors.grey,
+                  const SizedBox(height: 20),
+                  Container(
+                    width: screenWidth * 0.3,  // Adjust this width to be dynamic
+                    constraints: const BoxConstraints(
+                      minWidth: 300, // Minimum width for the login box
+                    ),
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      children: [
+                        const Text(
+                          'Sign In',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.purple,
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 10),
-                      TextField(
-                        controller: _passwordController,
-                        obscureText: !_isPasswordVisible,
-                        decoration: InputDecoration(
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _isPasswordVisible
-                                  ? FontAwesomeIcons.eye
-                                  : FontAwesomeIcons.eyeSlash,
+                        const SizedBox(height: 15),
+                        TextField(
+                          controller: _emailController,
+                          decoration: const InputDecoration(
+                            suffixIcon: Icon(
+                              FontAwesomeIcons.envelope,
                               size: 17,
+                            ),
+                            hintText: 'Email',
+                            hintStyle: TextStyle(
                               color: Colors.grey,
                             ),
-                            onPressed: _togglePasswordVisibility,
-                          ),
-                          hintText: 'Password',
-                          hintStyle: const TextStyle(
-                            color: Colors.grey,
                           ),
                         ),
-                        onSubmitted: (value) {
-                          _signIn(); // Gọi hàm đăng nhập khi nhấn Enter
-                        },
-                      ),
-                      const SizedBox(height: 15),
-                      TextButton(
-                        onPressed: () async {
-                          Navigator.pushNamed(context, '/forgot-password');
-                        },
-                        child: const Text(
-                          'Forgot Password?',
-                          style: TextStyle(color: Colors.black54),
-                        ),
-                      ),
-                      const SizedBox(height: 15),
-                      ElevatedButton(
-                        onPressed: _isLoading ? null : _signIn, // Disable button when loading
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.all(15),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(50),
-                          ),
-                          elevation: 0, // No shadow
-                          backgroundColor: Colors.transparent, // Allows the gradient to show
-                        ).copyWith(
-                          foregroundColor: WidgetStateProperty.all(Colors.white),
-                          overlayColor: WidgetStateProperty.resolveWith<Color?>(
-                            (states) {
-                                if (states.contains(WidgetState.pressed)) {
-                                return Colors.black.withAlpha(50); // Ripple effect when pressed
-                                }
-                                if (states.contains(WidgetState.hovered)) {
-                                return Colors.grey.withAlpha(25); // Hover effect
-                                }
-                              return null; // Default
-                            },
-                          ),
-                        ),
-                        child: Ink(
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Colors.grey, Colors.black],
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
+                        const SizedBox(height: 10),
+                        TextField(
+                          controller: _passwordController,
+                          obscureText: !_isPasswordVisible,
+                          decoration: InputDecoration(
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _isPasswordVisible
+                                    ? FontAwesomeIcons.eye
+                                    : FontAwesomeIcons.eyeSlash,
+                                size: 17,
+                                color: Colors.grey,
+                              ),
+                              onPressed: _togglePasswordVisibility,
                             ),
-                            borderRadius: BorderRadius.circular(50),
+                            hintText: 'Password',
+                            hintStyle: const TextStyle(
+                              color: Colors.grey,
+                            ),
                           ),
-                          child: Padding( // Thêm padding để tạo khoảng cách hợp lý
-                            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 34),
-                            child: Center(
-                              child: _isLoading
-                                  ? const CircularProgressIndicator(color: Colors.white)
-                                  : const Text(
-                                      'Login',
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
+                          onSubmitted: (value) {
+                            _signIn(); // Gọi hàm đăng nhập khi nhấn Enter
+                          },
+                        ),
+                        const SizedBox(height: 15),
+                        TextButton(
+                          onPressed: () async {
+                            Navigator.pushNamed(context, '/forgot-password');
+                          },
+                          child: const Text(
+                            'Forgot Password?',
+                            style: TextStyle(color: Colors.purple),
+                          ),
+                        ),
+                        const SizedBox(height: 15),
+                        ElevatedButton(
+                          onPressed: _isLoading ? null : _signIn, // Disable button when loading
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.all(15),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                            elevation: 0, // No shadow
+                            backgroundColor: Colors.transparent, // Allows the gradient to show
+                          ).copyWith(
+                            foregroundColor: WidgetStateProperty.all(Colors.white),
+                            overlayColor: WidgetStateProperty.resolveWith<Color?>(
+                              (states) {
+                                  if (states.contains(WidgetState.pressed)) {
+                                  return Colors.pinkAccent.withAlpha(50); // Ripple effect when pressed
+                                  }
+                                  if (states.contains(WidgetState.hovered)) {
+                                  return Colors.pinkAccent.withAlpha(25); // Hover effect
+                                  }
+                                return null; // Default
+                              },
+                            ),
+                          ),
+                          child: Ink(
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Colors.purpleAccent, Colors.purple],
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
+                              ),
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                            child: Padding( // Thêm padding để tạo khoảng cách hợp lý
+                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 34),
+                              child: Center(
+                                child: _isLoading
+                                    ? const CircularProgressIndicator(color: Colors.white)
+                                    : const Text(
+                                        'Login',
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
-                                    ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 15),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pushReplacementNamed(context, '/signup');
-                        },
-                        child: const Text(
-                          "Don't have an account? Sign up.",
-                          style: TextStyle(color: Colors.black54),
+                        const SizedBox(height: 15),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pushReplacementNamed(context, '/signup');
+                          },
+                          child: const Text(
+                            "Don't have an account? Sign up.",
+                            style: TextStyle(color: Colors.purple),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
